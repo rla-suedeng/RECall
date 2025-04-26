@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:template/app/routing/router_service.dart'; // 혹시 필요하면 추가
+import 'package:template/app/routing/router_service.dart';
+import 'package:template/app/theme/colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -28,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
                   style: GoogleFonts.pacifico(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2D4436))),
+                      color: AppColors.secondary)),
               const SizedBox(height: 8),
               const Text('Welcome Back', style: TextStyle(fontSize: 24)),
               const SizedBox(height: 8),

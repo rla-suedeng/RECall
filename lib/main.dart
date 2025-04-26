@@ -11,6 +11,7 @@ import 'package:template/app/api/api_service.dart';
 import 'package:template/app/auth/auth_service.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/service/secure_storage_service.dart';
+import 'package:template/app/theme/colors.dart';
 
 part 'service.dart';
 
@@ -28,9 +29,9 @@ void main() async {
         child: MaterialApp.router(
           title: 'RECall',
           theme: ThemeData(
+            scaffoldBackgroundColor: AppColors.background,
             textTheme: GoogleFonts.quicksandTextTheme(),
-            colorScheme:
-                ColorScheme.fromSeed(seedColor: const Color(0xFFE67553)),
+            colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
             useMaterial3: true,
           ),
           routerConfig: RouterService.I.router,
