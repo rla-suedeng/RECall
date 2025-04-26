@@ -22,7 +22,10 @@ class Service {
       container: container,
     ));
 
-    GetIt.I.registerSingleton(RouterService()..init());
+    GetIt.I.registerSingleton(RouterService());
+
+    RouterService.I.init();
+
     return container;
   }
 }

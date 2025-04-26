@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:template/app/api/api_service.dart';
 import 'package:template/app/auth/auth_service.dart';
 import 'package:template/app/routing/router_service.dart';
@@ -20,13 +21,19 @@ void main() async {
       await Service.initEnv();
       final serviceProviderContainer = Service.registerServices();
 
-      final router = RouterService.I.router;
+      //final router = RouterService.I.router;
 
       runApp(UncontrolledProviderScope(
         container: serviceProviderContainer,
         child: MaterialApp.router(
-          title: 'template',
-          routerConfig: router,
+          title: 'RECall',
+          theme: ThemeData(
+            textTheme: GoogleFonts.quicksandTextTheme(),
+            colorScheme:
+                ColorScheme.fromSeed(seedColor: const Color(0xFFE67553)),
+            useMaterial3: true,
+          ),
+          routerConfig: RouterService.I.router,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
             return Overlay(
