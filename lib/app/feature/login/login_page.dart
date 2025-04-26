@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/theme/colors.dart';
+import 'package:get_it/get_it.dart';
+import 'package:template/app/auth/firebase_auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -72,9 +74,31 @@ class _LoginPageState extends State<LoginPage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () async {
-                    debugPrint('✅ Sign In 버튼 눌림');
-                    if (mounted) {
-                      context.go(Routes.home); // ✅ 바로 HomePage로 이동
+                    final authService = GetIt.I<FirebaseAuthService>();
+                    try {
+                      final user = await authService.signInWithEmail(
+                        emailController.text.trim(),
+                        passwordController.text.trim(),
+                      );
+                      if (user != null) {
+                        debugPrint('✅ 로그인 성공: ${user.email}');
+                        context.go(Routes.home);
+                      }
+                    } catch (e) {
+                      debugPrint('❌ 로그인 실패: $e');
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Login Failed'),
+                          content: Text(e.toString()),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            )
+                          ],
+                        ),
+                      );
                     }
                   },
                   child: const Text('Sign In'),
@@ -107,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 24),
               TextButton(
                 onPressed: () {
-                  // TODO: Sign up 화면 이동
+                  context.go(Routes.register);
                 },
                 child: const Text.rich(
                   TextSpan(

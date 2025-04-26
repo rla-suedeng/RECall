@@ -21,10 +21,9 @@ class Service {
       secureStorageService: secureStorageSerivce,
       container: container,
     ));
+    GetIt.I.registerSingleton(FirebaseAuthService());
 
     GetIt.I.registerSingleton(RouterService());
-
-    RouterService.I.init();
 
     return container;
   }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:template/app/feature/error/error_page.dart';
 import 'package:template/app/feature/home/home_page.dart';
 import 'package:template/app/feature/login/login_page.dart';
+import 'package:template/app/feature/register/register_page.dart';
 
 extension GoRouterX on GoRouter {
   BuildContext? get context => configuration.navigatorKey.currentContext;
@@ -26,6 +27,7 @@ abstract class Routes {
   static const String home = '/';
   static const String error = '/error';
   static const String login = '/login';
+  static const String register = '/register';
 }
 
 class RouterService {
@@ -45,6 +47,11 @@ class RouterService {
             return const LoginPage();
           },
         ),
+        GoRoute(
+            path: Routes.register,
+            builder: (context, state) {
+              return const RegisterPage();
+            }),
         GoRoute(
           path: Routes.home,
           builder: (context, state) {
