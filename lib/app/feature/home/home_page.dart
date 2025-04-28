@@ -1,7 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showWelcomePopup(context);
+    });
+  }
+
+  void _showWelcomePopup(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 바깥 클릭해도 안 닫힘
+      builder: (context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🧸 로봇 이미지 (asset 경로로 수정 가능)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Image.asset(
+                    'assets/robot.png', // ✅ 네 로봇 이미지 경로
+                    height: 120,
+                    width: 120,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Welcome Back!',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Ready to revisit your memories?\nI\'m here to help!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrangeAccent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    icon: const Icon(Icons.mic, color: Colors.white),
+                    label: const Text('Talk to Me',
+                        style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      Navigator.pop(context); // 팝업 닫기
+                      context.go(Routes.chat); // ✅ Chats 화면으로 이동
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +103,6 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Good Afternoon, Mary
               const Text(
                 'Good Afternoon,\nMary',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -36,15 +113,13 @@ class HomePage extends StatelessWidget {
                 style: TextStyle(color: Colors.grey[600]),
               ),
               const SizedBox(height: 24),
-
-              // Rediscover Memory Banner
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Image.network(
-                      'https://picsum.photos/400/200', // ✅ 임시 이미지
+                      'https://picsum.photos/400/200',
                       height: 200,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -64,8 +139,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Mic Button
               Center(
                 child: Column(
                   children: [
@@ -86,8 +159,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Recent Memories
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -111,8 +182,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Add New Photos
               GestureDetector(
                 onTap: () {},
                 child: Container(
@@ -135,8 +204,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Memory Albums
               const Text(
                 'Memory Albums',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -154,8 +221,6 @@ class HomePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 32),
-
-              // Accessibility
               const Text(
                 'Accessibility',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
