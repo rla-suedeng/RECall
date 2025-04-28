@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 
 class AddRecordPage extends StatefulWidget {
   const AddRecordPage({super.key});
@@ -27,7 +29,9 @@ class _AddRecordPageState extends State<AddRecordPage> {
         title: const Text('Add New Record'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            context.go(Routes.home);
+          },
         ),
       ),
       body: SingleChildScrollView(

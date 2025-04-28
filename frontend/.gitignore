@@ -41,6 +41,7 @@ ios/Runner/GoogleService-Info.plist
 *.temp
 *.swp
 *.DS_Store
+*.pdf
 
 # Web 관련 (만약 Flutter web 지원할 경우)
 build/web/

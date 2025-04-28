@@ -10,7 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _popupShown = false;
+  static bool _popupShown = false;
   @override
   void initState() {
     super.initState();
@@ -154,7 +154,9 @@ class _HomePageState extends State<HomePage> {
                       child: IconButton(
                         icon: const Icon(Icons.mic,
                             color: Colors.white, size: 32),
-                        onPressed: () {},
+                        onPressed: () {
+                          context.go(Routes.chat);
+                        },
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -187,7 +189,9 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 32),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  context.go(Routes.addRecord);
+                },
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
