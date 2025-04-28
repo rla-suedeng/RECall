@@ -74,7 +74,7 @@ class RouterService {
           path: Routes.chat,
           builder: (context, state) {
             // var args = state.extra;
-            return const HomePage();
+            return const ChatPage();
           },
         ),
       ], // TODO: Add routes
