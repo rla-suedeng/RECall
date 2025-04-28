@@ -21,6 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final confirmPasswordController = TextEditingController();
   bool isObscure = true;
   bool isConfirmObscure = true;
+  String? _selectedRole; // 'Reminder' or 'Recorder'
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +130,40 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 24),
 
+                      // --- Role Select ---
+                      const SizedBox(height: 16),
+
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Select Role',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          RadioListTile<String>(
+                            title: const Text('Reminder'),
+                            value: 'Reminder',
+                            groupValue: _selectedRole,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedRole = value;
+                              });
+                            },
+                          ),
+                          RadioListTile<String>(
+                            title: const Text('Recorder'),
+                            value: 'Recorder',
+                            groupValue: _selectedRole,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedRole = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+
                       // --- Create Account Button ---
                       SizedBox(
                         width: double.infinity,
@@ -143,7 +178,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               );
                               if (user != null) {
                                 debugPrint('✅ 회원가입 성공: ${user.email}');
-                                context.go(Routes.login);
+                                if (_selectedRole == 'Recorder') {
+                                  context.go(Routes
+                                      .recorderRegister); // ✅ Recorder면 등록 페이지로
+                                } else {
+                                  context
+                                      .go(Routes.login); // ✅ Reminder면 로그인 페이지로
+                                }
                               }
                             } catch (e) {
                               debugPrint('❌ 회원가입 실패: $e');
