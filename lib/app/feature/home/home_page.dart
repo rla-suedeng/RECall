@@ -10,19 +10,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _popupShown = false;
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showWelcomePopup(context);
+      if (!_popupShown) {
+        _showWelcomePopup(context);
+        _popupShown = true;
+      }
     });
   }
 
   void _showWelcomePopup(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, // 바깥 클릭해도 안 닫힘
+      barrierDismissible: true, // 바깥 클릭해도 닫힘
       builder: (context) {
         return Dialog(
           shape:
@@ -36,7 +40,7 @@ class _HomePageState extends State<HomePage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(100),
                   child: Image.asset(
-                    'assets/robot.png', // ✅ 네 로봇 이미지 경로
+                    'assets/robot.png',
                     height: 120,
                     width: 120,
                     fit: BoxFit.cover,
@@ -68,8 +72,8 @@ class _HomePageState extends State<HomePage> {
                     label: const Text('Talk to Me',
                         style: TextStyle(color: Colors.white)),
                     onPressed: () {
-                      Navigator.pop(context); // 팝업 닫기
-                      context.go(Routes.chat); // ✅ Chats 화면으로 이동
+                      Navigator.pop(context);
+                      context.go(Routes.chat);
                     },
                   ),
                 )

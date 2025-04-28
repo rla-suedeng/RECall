@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:go_router/go_router.dart';
+import 'package:template/app/routing/router_service.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -37,7 +39,9 @@ class _ChatPageState extends State<ChatPage> {
         title: const Text('Memory Chat'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            context.go(Routes.home);
+          },
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
