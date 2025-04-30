@@ -3,8 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/theme/colors.dart';
-import 'package:get_it/get_it.dart';
-import 'package:template/app/auth/firebase_auth_service.dart';
+import 'package:template/app/service/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -74,30 +73,15 @@ class _LoginPageState extends State<LoginPage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final authService = GetIt.I<FirebaseAuthService>();
                     try {
-                      final user = await authService.signInWithEmail(
-                        emailController.text.trim(),
-                        passwordController.text.trim(),
+                      await loginWithEmail(
+                        email: emailController.text,
+                        password: passwordController.text,
                       );
-                      if (user != null) {
-                        debugPrint('✅ 로그인 성공: ${user.email}');
-                        context.go(Routes.home);
-                      }
+                      context.go(Routes.home);
                     } catch (e) {
-                      debugPrint('❌ 로그인 실패: $e');
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Login Failed'),
-                          content: Text(e.toString()),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('OK'),
-                            )
-                          ],
-                        ),
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString())),
                       );
                     }
                   },
