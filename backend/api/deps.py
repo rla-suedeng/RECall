@@ -1,20 +1,23 @@
-from fastapi import FastAPI, HTTPException, Depends, Header
-from typing import Annotated
+from fastapi import FastAPI, Header, HTTPException, Depends
+from firebase_admin import auth, credentials
+import firebase_admin
 
-from RECall import schemas
+#cred = credentials.Certificate("path/to/your/serviceAccountKey.json")  # 서비스 계정 키 파일 경로
+#firebase_admin.initialize_app(cred)
 
-async def get_current_user(authorization: Annotated[str, Header()]):
-    if firebase_auth is None or not authorization:
-        raise HTTPException(status_code=401, detail="인증되지 않았습니다.")
+
+async def get_user_id(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="유효하지 않은 인증 정보")
     try:
-        scheme, token = authorization.split()
-        if scheme.lower() != "bearer":
-            raise HTTPException(status_code=401, detail="유효하지 않은 인증 방식")
-        decoded_token = await firebase_auth.verify_id_token(token)
+        id_token = authorization.split(" ")[1]
+        decoded_token = auth.verify_id_token(id_token)
         uid = decoded_token.get("uid")
-        if not uid:
-            raise HTTPException(status_code=401, detail="유효하지 않은 토큰")
-        return UserInfo(uid=uid)
+        if uid is None:
+            raise HTTPException(status_code=401, detail="유효하지 않은 사용자 ID")
+        return uid
+    except auth.InvalidIdTokenError:
+        raise HTTPException(status_code=401, detail="유효하지 않은 ID 토큰")
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"유효하지 않은 토큰: {e}")
-
+        print(f"토큰 검증 오류: {e}")
+        raise HTTPException(status_code=500, detail="서버 오류")
