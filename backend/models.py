@@ -10,7 +10,7 @@ import enum
 class User(Base):
     __tablename__ = "users"
 
-    id =Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    id =Column(String, primary_key=True, nullable=False)
     role = Column(Boolean, nullable=False)  # True면 patient, False면 care
     email = Column(String, unique=True, nullable=False)
     f_name = Column(String, nullable=False)
@@ -36,7 +36,7 @@ class Rec(Base):
     __tablename__ = "rec"
 
     id = Column(Integer, primary_key=True,autoincrement=True)
-    u_id =Column(UUID(as_uuid=True),ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    u_id =Column(String,ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     content = Column(Text, nullable=False)
     file = Column(String, nullable=False) 
     date = Column(Date, nullable=True)
@@ -52,7 +52,7 @@ class History(Base):
     __tablename__ = "history"
 
     id = Column(Integer, primary_key=True,autoincrement=True)
-    u_id =Column(UUID(as_uuid=True), ForeignKey('users.id'),nullable=False)
+    u_id =Column(String, ForeignKey('users.id'),nullable=False)
     r_id =  Column(Integer,ForeignKey('rec.id'), nullable=False)
     date = Column(Date, nullable=True)
     
@@ -67,7 +67,7 @@ class Chat(Base):
     id = Column(Integer, primary_key=True,autoincrement=True)
     h_id = Column(Integer, ForeignKey('history.id'), nullable=False)
     r_id =  Column(Integer,ForeignKey('rec.id'), nullable=False)
-    u_id = Column(UUID(as_uuid=True),ForeignKey('user.id'))
+    u_id = Column(String,ForeignKey('user.id'))
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     

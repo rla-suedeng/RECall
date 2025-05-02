@@ -12,18 +12,18 @@ class CategoryEnum(str, Enum):
 
 
 class RecBase(BaseModel):
-    u_id: UUID
+    u_id: str
     content:str
     file: str
     date: Optional[date]
     category: CategoryEnum
-    author_id: UUID
+    author_id: str
 
 class RecCreate(RecBase):
     pass
 
 class RecGet(RecBase):
-    r_id: UUID
+    r_id: str
 
 class RecUpdate(BaseModel):
     content: Optional[str]
@@ -33,7 +33,7 @@ class RecUpdate(BaseModel):
 
 
 class RecDelete(BaseModel):
-    r_id: UUID
+    r_id: str
 
 
 

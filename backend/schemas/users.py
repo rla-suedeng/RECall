@@ -11,7 +11,7 @@ class UserBase(BaseModel):
     email: EmailStr
     birthday: date
     is_patient: bool
-    p_id: Optional[UUID] = None
+    p_id: Optional[str] = None
 
 class UserCreate(UserBase):
     pass
@@ -25,7 +25,7 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr]
     birthday: Optional[date]
     is_patient: Optional[bool] #role 바꿀 수 있는가?
-    p_id: Optional[UUID]
+    p_id: Optional[str]
 
 class UserDelete(BaseModel):
     u_id: UUID
