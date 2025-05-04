@@ -4,7 +4,7 @@
 .pub-cache/
 build/
 generated_plugin_registrant.dart
-**/.flutter-plugins-dependencies
+.flutter-plugins-dependencies
 
 # iOS 관련
 ios/Flutter/Flutter.framework
