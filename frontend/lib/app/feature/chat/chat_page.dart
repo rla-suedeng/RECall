@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +12,8 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage>
+    with SingleTickerProviderStateMixin {
   final List<Map<String, dynamic>> _messages = [
     {
       'isUser': false,
@@ -33,6 +35,37 @@ class _ChatPageState extends State<ChatPage> {
     },
   ];
 
+  late final String _randomImageUrl;
+  AnimationController? _controller;
+  Animation<double>? _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _randomImageUrl = 'https://picsum.photos/400/200';
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller!,
+      curve: Curves.easeIn,
+    );
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) _controller?.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,37 +83,46 @@ class _ChatPageState extends State<ChatPage> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 16),
-
-          // 캐릭터 애니메이션
-          Lottie.asset(
-            'assets/speaker_animation.json',
-            height: 120,
-          ),
-          const SizedBox(height: 16),
-
-          // Listening + Mic
-          const Text('Listening...', style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.deepOrangeAccent,
-              borderRadius: BorderRadius.circular(12),
+          // 상단 이미지 (회상 이미지)
+          if (_fadeAnimation != null)
+            FadeTransition(
+              opacity: _fadeAnimation!,
+              child: Image.network(
+                'https://picsum.photos/400/200',
+                height: MediaQuery.of(context).size.height * 0.3,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: Icon(Icons.broken_image, size: 60),
+                    ),
+                  );
+                },
+              ),
             ),
-            child: IconButton(
-              icon: const Icon(Icons.mic, color: Colors.white),
-              onPressed: () {
-                // TODO: 음성 인식 기능 연결
-              },
-            ),
+
+          // 애니메이션 + Listening 텍스트
+          Column(
+            children: [
+              Lottie.asset(
+                'assets/listening-wave.json',
+                height: 60,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Listening to your memory...',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 12),
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text('Tap to speak'),
-          const SizedBox(height: 16),
 
-          const Divider(),
+          const Divider(height: 1),
 
-          // 채팅 메시지
+          // 채팅 메시지 영역
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
