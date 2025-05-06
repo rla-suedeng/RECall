@@ -164,7 +164,10 @@ class _ChatPageState extends State<ChatPage>
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const CustomBottomNavBar(
+        currentIndex: null,
+        highlight: false,
+      ),
     );
   }
 }

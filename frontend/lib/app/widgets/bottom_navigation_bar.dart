@@ -18,7 +18,7 @@ class CustomBottomNavBar extends StatelessWidget {
         context.go(Routes.album);
         break;
       case 2:
-        context.go(Routes.chat);
+        context.go(Routes.history);
         break;
       case 3:
         context.go(Routes.login);
@@ -36,7 +36,8 @@ class CustomBottomNavBar extends StatelessWidget {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.photo_album), label: 'Photos'),
-        BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Chat'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble), label: 'Chat History'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
