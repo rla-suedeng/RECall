@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // GoRouter 사용 시
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
+import 'package:template/app/routing/router_service.dart';
 
 class AlbumPage extends StatefulWidget {
   const AlbumPage({super.key});
@@ -48,7 +50,7 @@ class _AlbumPageState extends State<AlbumPage> {
         children: [
           const SizedBox(height: 12),
 
-          /// 필터 드롭다운 2개 (둥근 스타일)
+          /// 필터 드롭다운 2개
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -187,12 +189,23 @@ class _AlbumPageState extends State<AlbumPage> {
               ),
               itemCount: filteredPhotos.length,
               itemBuilder: (context, index) {
+                final photo = filteredPhotos[index];
                 final imagePath = dummyImages[index % dummyImages.length];
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
+
+                return GestureDetector(
+                  onTap: () {
+                    context.push(Routes.record, extra: {
+                      'imagePath': imagePath,
+                      'date': photo['date'],
+                      'category': photo['category'],
+                    });
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      imagePath,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 );
               },
