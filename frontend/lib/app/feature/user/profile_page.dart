@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:template/app/theme/colors.dart';
 //import 'package:go_router/go_router.dart';
 //import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
+import 'package:template/app/widgets/app_bar.dart';
 
 class ProfilePage extends StatelessWidget {
   final String name = "Thomas Anderson";
@@ -16,22 +18,21 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7E6),
-      appBar: AppBar(
-        title: const Text(''),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: const [
-          Icon(Icons.notifications_none, color: Colors.black),
-          SizedBox(width: 12),
-          Icon(Icons.settings, color: Colors.black),
-          SizedBox(width: 16),
-        ],
+      appBar: const RECallAppBar(
+        title: '',
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(
+              height: 24,
+            ),
             // Profile Info
             Row(
               children: [
@@ -175,7 +176,11 @@ class ProfilePage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text("Log Out", style: TextStyle(fontSize: 16)),
+                child: const Text("Log Out",
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.background)),
               ),
             ),
             const SizedBox(height: 24),

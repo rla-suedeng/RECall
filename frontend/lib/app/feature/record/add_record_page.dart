@@ -15,6 +15,10 @@ class _AddRecordPageState extends State<AddRecordPage> {
   final descriptionController = TextEditingController();
   final dateController = TextEditingController();
 
+  final whereController = TextEditingController();
+  final withWhomController = TextEditingController();
+  final whatController = TextEditingController();
+
   String? selectedCategory;
   final List<String> categories = [
     'Family',
@@ -117,20 +121,52 @@ class _AddRecordPageState extends State<AddRecordPage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Description
-              const Text('Description'),
+              // 기존 "Description" 섹션 아래 교체
+              const Text('Where'),
               const SizedBox(height: 8),
               TextField(
-                controller: descriptionController,
-                maxLines: 4,
+                controller: whereController,
                 decoration: const InputDecoration(
-                  hintText: 'Add some details about this memory...',
+                  hintText: 'Where did it happen?',
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
+              const Text('With Whom'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: withWhomController,
+                decoration: const InputDecoration(
+                  hintText: 'Who were you with?',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              const Text('What Happened'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: whatController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  hintText: 'Briefly describe what happened',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              const Text('Additional Notes (optional)'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: descriptionController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Add any extra details about this memory...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 24),
               // Save Button
               SizedBox(
                 width: double.infinity,

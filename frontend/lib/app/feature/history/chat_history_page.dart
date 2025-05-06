@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:template/app/theme/colors.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
+import 'package:template/app/widgets/app_bar.dart';
 
 class ChatHistoryPage extends StatelessWidget {
   final List<Map<String, String>> chatData = [
@@ -35,22 +37,12 @@ class ChatHistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Chat History',
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          foregroundColor: Colors.black,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.calendar_today),
-              onPressed: () {},
-            ),
-          ],
+        appBar: const RECallAppBar(
+          title: 'Chat History',
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         body: Column(
           children: [
@@ -102,8 +94,11 @@ class ChatHistoryPage extends StatelessWidget {
           onPressed: () {
             // Scroll to top or another action
           },
-          backgroundColor: Colors.orange,
-          child: const Icon(Icons.arrow_upward),
+          backgroundColor: AppColors.primary,
+          child: const Icon(
+            Icons.arrow_upward,
+            color: AppColors.background,
+          ),
         ),
         bottomNavigationBar: const CustomBottomNavBar(
           currentIndex: 2,

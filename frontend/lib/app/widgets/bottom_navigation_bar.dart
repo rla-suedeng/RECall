@@ -37,7 +37,7 @@ class CustomBottomNavBar extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.photo_album), label: 'Photos'),
+        BottomNavigationBarItem(icon: Icon(Icons.photo_album), label: 'Album'),
         BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble), label: 'Chat History'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),

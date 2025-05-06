@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // GoRouter 사용 시
+import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/routing/router_service.dart';
 
@@ -36,15 +37,12 @@ class _AlbumPageState extends State<AlbumPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Photos'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
+      appBar: const RECallAppBar(
+        title: 'Album',
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       body: Column(
         children: [
