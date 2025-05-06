@@ -8,6 +8,7 @@ import 'package:template/app/feature/register/record_register_page.dart';
 import 'package:template/app/feature/register/register_page.dart';
 import 'package:template/app/feature/chat/chat_page.dart';
 import 'package:template/app/feature/record/add_record_page.dart';
+import 'package:template/app/feature/album/album_page.dart';
 
 extension GoRouterX on GoRouter {
   BuildContext? get context => configuration.navigatorKey.currentContext;
@@ -34,6 +35,7 @@ abstract class Routes {
   static const String recorderRegister = '/recorder_register';
   static const String chat = '/chat';
   static const String addRecord = '/record';
+  static const String album = '/album';
 }
 
 class RouterService {
@@ -84,6 +86,13 @@ class RouterService {
           builder: (context, state) {
             // var args = state.extra;
             return const ChatPage();
+          },
+        ),
+        GoRoute(
+          path: Routes.album,
+          builder: (context, state) {
+            // var args = state.extra;
+            return const AlbumPage();
           },
         ),
       ], // TODO: Add routes

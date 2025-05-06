@@ -15,7 +15,7 @@ class CustomBottomNavBar extends StatelessWidget {
         context.go(Routes.home);
         break;
       case 1:
-        context.go(Routes.error);
+        context.go(Routes.album);
         break;
       case 2:
         context.go(Routes.chat);
