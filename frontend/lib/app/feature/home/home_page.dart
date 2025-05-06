@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
+import 'package:template/app/widgets/bottom_navigation_bar.dart';
+import 'package:template/app/theme/colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:template/app/widgets/app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -92,14 +96,8 @@ class _HomePageState extends State<HomePage> {
         "${_weekday(today.weekday)}, ${today.month}/${today.day}/${today.year}";
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('RECall'),
-        actions: [
-          IconButton(
-              onPressed: () {}, icon: const Icon(Icons.notifications_none)),
-          IconButton(
-              onPressed: () {}, icon: const Icon(Icons.settings_outlined)),
-        ],
+      appBar: const RECallAppBar(
+        title: 'RECall',
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -217,16 +215,19 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  _albumCard('Family', '42 memories', Icons.favorite_border),
-                  _albumCard('Travel', '28 memories', Icons.card_travel),
-                  _albumCard('Childhood', '19 memories', Icons.child_care),
-                  _albumCard(
-                      'Special Events', '36 memories', Icons.star_border),
-                ],
+              Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: [
+                    _albumCard('Family', '42 memories', Icons.favorite_border),
+                    _albumCard('Travel', '28 memories', Icons.card_travel),
+                    _albumCard('Childhood', '19 memories', Icons.child_care),
+                    _albumCard(
+                        'Special Events', '36 memories', Icons.star_border),
+                  ],
+                ),
               ),
               const SizedBox(height: 32),
               const Text(
@@ -240,19 +241,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.deepOrange,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.photo_album), label: 'Albums'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline), label: 'Chats'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: 'Profile'),
-        ],
-      ),
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 0),
     );
   }
 
@@ -297,16 +286,28 @@ class _HomePageState extends State<HomePage> {
   // Album Card
   Widget _albumCard(String title, String subtitle, IconData icon) {
     return Container(
-      width: 150,
+      width: 160,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 32),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.softBlue,
+            ),
+            child: Icon(
+              icon,
+              size: 28,
+              color: AppColors.secondary,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           Text(subtitle, style: const TextStyle(color: Colors.grey)),
