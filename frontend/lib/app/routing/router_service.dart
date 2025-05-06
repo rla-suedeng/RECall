@@ -10,6 +10,7 @@ import 'package:template/app/feature/chat/chat_page.dart';
 import 'package:template/app/feature/record/add_record_page.dart';
 import 'package:template/app/feature/album/album_page.dart';
 import 'package:template/app/feature/history/chat_history_page.dart';
+import 'package:template/app/feature/user/profile_page.dart';
 
 extension GoRouterX on GoRouter {
   BuildContext? get context => configuration.navigatorKey.currentContext;
@@ -38,6 +39,7 @@ abstract class Routes {
   static const String addRecord = '/record';
   static const String album = '/album';
   static const String history = '/chat_history';
+  static const String profile = '/profile';
 }
 
 class RouterService {
@@ -102,6 +104,13 @@ class RouterService {
           builder: (context, state) {
             // var args = state.extra;
             return ChatHistoryPage();
+          },
+        ),
+        GoRoute(
+          path: Routes.profile,
+          builder: (context, state) {
+            // var args = state.extra;
+            return const ProfilePage();
           },
         ),
       ], // TODO: Add routes

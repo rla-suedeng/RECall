@@ -21,13 +21,15 @@ class CustomBottomNavBar extends StatelessWidget {
         context.go(Routes.history);
         break;
       case 3:
-        context.go(Routes.login);
+        context.go(Routes.profile);
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!highlight) return const SizedBox.shrink(); // 아무것도 안 보여줌
+
     return BottomNavigationBar(
       currentIndex: currentIndex ?? 0,
       onTap: (index) => _onItemTapped(context, index),
