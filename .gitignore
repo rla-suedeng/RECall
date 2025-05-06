@@ -1,0 +1,58 @@
+.flutter-plugins-dependencies
+# Flutter/Dart 관련
+.dart_tool/
+.packages
+.pub-cache/
+build/
+generated_plugin_registrant.dart
+
+
+# iOS 관련
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/engine/
+Pods/
+Podfile.lock
+*.xcworkspace
+DerivedData/
+
+# Android 관련
+android/.gradle/
+android/app/build/
+*.iml
+.gradle/
+local.properties
+
+# Firebase 관련
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# 환경변수 파일
+.env
+.env.*
+
+# IDE 설정 파일
+.vscode/
+.idea/
+*.iml
+
+# 기타
+*.log
+*.tmp
+*.temp
+*.swp
+*.DS_Store
+*.pdf
+
+# Web 관련 (만약 Flutter web 지원할 경우)
+build/web/
+
+# MacOS 관련
+macos/Flutter/ephemeral/
+
+# Windows 관련
+windows/Flutter/ephemeral/
+
+# Linux 관련
+linux/Flutter/ephemeral/
