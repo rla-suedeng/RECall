@@ -9,15 +9,14 @@ class HistoryBase(BaseModel):
     date: date
     
 
-class ChatBase(BaseModel):
-    h_id: int
+class ChatBase(BaseModel): 
     u_id: str  # "user" 또는 "gemini"
     content: str
-    timestamp: datetime
+   
     
-class ChatCreate(ChatBase):
-    pass
+class ChatGet(ChatBase):
+    timestamp: datetime
 
 
-class ChatHistoryResponse(BaseModel):
-    history: List[ChatBase]
+# class Message(BaseModel):
+

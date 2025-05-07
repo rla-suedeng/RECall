@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional,List
 from enum import Enum
 
 class Userinfo(BaseModel):
@@ -14,7 +14,7 @@ class UserBase(BaseModel):
     email: EmailStr
     birthday: date
     p_id: Optional[str] = None
-
+    
 class UserCreate(UserBase):
     pass
 
@@ -27,6 +27,12 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr]
     birthday: Optional[date]
     p_id: Optional[str]
+    
+class MemorySummary(BaseModel):
+    file: str
+    r_date: Optional[date]=None
+    title: str
 
-class UserDelete(BaseModel):
-    u_id: str
+class RootResponse(BaseModel):
+    name: str
+    recent_memory: List[MemorySummary]

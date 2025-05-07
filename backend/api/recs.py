@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, Header,APIRouter,status, Query
-from typing import Annotated,List,Optional
+from typing import Annotated,List,Optional,Literal
 from sqlalchemy.orm import Session
 from enum import Enum
 from datetime import date, datetime
@@ -26,11 +26,9 @@ def create_rec(
     user: User = Depends(get_current_user) 
 ):
 
+    target_uid = user.u_id if user.role else user.p_id
 
-    if user.role == True:
-        db_rec = Rec(**rec.dict(), u_id=user.u_id, author_id=user.u_id)
-    else : 
-        db_rec = Rec(**rec.dict(), u_id=user.p_id,author_id=user.u_id)
+    db_rec = Rec(**rec.dict(), u_id=target_uid,author_id=user.u_id)
     db.add(db_rec)
     db.commit()
     db.refresh(db_rec)
@@ -42,17 +40,26 @@ def create_rec(
 def get_recs(
     category: Optional[CategoryEnum] = Query(None),
     keyword: Optional[str] = Query(None),
-    date_from: Optional[date] = Query(None),
-    date_to: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user) 
+    order: Literal["asc", "desc"] = Query("desc"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db), 
 ):
-
-    if user.role == True:
-        recs = db.query(Rec).filter(Rec.u_id == user.u_id).all()
-    else : 
-        recs = db.query(Rec).filter(Rec.u_id == user.p_id).all()
+    target_uid = user.u_id if user.role else user.p_id
+    if not target_uid:
+        raise HTTPException(status_code=400, detail="유효한 사용자 또는 보호자 없음")
+    
+    recs = db.query(Rec).filter(Rec.u_id == target_uid)
+    if category:
+        recs = recs.filter(Rec.category == category)
+    if keyword:
+        recs = recs.filter(Rec.content.ilike(f"%{keyword}%"))
+    #정렬기준이 등록일 순서? 아니면 date순서?
+    if order == "asc":
+        recs = recs.order_by(Rec.r_id.asc()).all()
+    else:  # 기본은 desc
+        recs = recs.order_by(Rec.r_id.desc()).all()
     return recs
+
 
 @router.get("/{rec_id}", response_model=RecDetailGet)
 def get_rec(

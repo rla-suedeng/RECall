@@ -5,7 +5,7 @@ from enum import Enum
 from datetime import date, datetime
 
 from database import get_db
-from schemas.chat import (HistoryBase,ChatBase)
+from schemas.chat import (HistoryBase,ChatBase,ChatGet)
 from firebase.firebase_user import get_current_user
 from models import Rec, User,History,Chat
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 
-@router.get("/{history_id}", response_model=List[ChatBase])
+@router.get("/{history_id}", response_model=List[ChatGet])
 def get_chat(
     history_id: int, 
     db: Session = Depends(get_db),

@@ -4,7 +4,7 @@ from database import get_db
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from models import Rec, User
-from schemas.users import UserCreate,UserBase,UserUpdate
+from schemas.users import UserBase,UserUpdate,UserCreate
 from firebase.firebase_user import get_current_user
 bearer_scheme = HTTPBearer(auto_error=True)
 

@@ -37,7 +37,8 @@ class Rec(Base):
 
     r_id = Column(Integer, primary_key=True,autoincrement=True)
     u_id =Column(String(64),ForeignKey('users.u_id', ondelete='CASCADE'), nullable=False)
-    content = Column(Text, nullable=False)
+    title = Column(String(255), nullable=False) 
+    content = Column(Text, nullable=True)
     file = Column(String(255), nullable=False) 
     r_date = Column(Date, nullable=True)
     category = Column(Enum(CategoryEnum), nullable=False)
@@ -55,6 +56,7 @@ class History(Base):
     u_id =Column(String(64), ForeignKey('users.u_id'),nullable=False)
     r_id =  Column(Integer,ForeignKey('rec.r_id'), nullable=False)
     date = Column(Date, nullable=True)
+    summary =  Column(Text, nullable=True)
     
     user = relationship("User", back_populates="histories")
     rec = relationship("Rec", back_populates="histories")
