@@ -1,0 +1,5 @@
+__pycache__/
+test/
+firebase/__pycache__/
+firebase/firebase-adminsdk.json
+.env

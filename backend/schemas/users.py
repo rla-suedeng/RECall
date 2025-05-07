@@ -1,8 +1,11 @@
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional,List
 from enum import Enum
+
+class Userinfo(BaseModel):
+    u_id : str
 
 class UserBase(BaseModel):
     role: bool 
@@ -10,22 +13,26 @@ class UserBase(BaseModel):
     l_name: str
     email: EmailStr
     birthday: date
-    is_patient: bool
-    p_id: Optional[UUID] = None
-
+    p_id: Optional[str] = None
+    
 class UserCreate(UserBase):
     pass
 
 class UserGet(UserBase):
-    u_id: UUID
+    u_id: str
 
 class UserUpdate(BaseModel):
     f_name: Optional[str]
     l_name: Optional[str]
     email: Optional[EmailStr]
     birthday: Optional[date]
-    is_patient: Optional[bool] #role 바꿀 수 있는가?
-    p_id: Optional[UUID]
+    p_id: Optional[str]
+    
+class MemorySummary(BaseModel):
+    file: str
+    r_date: Optional[date]=None
+    title: str
 
-class UserDelete(BaseModel):
-    u_id: UUID
+class RootResponse(BaseModel):
+    name: str
+    recent_memory: List[MemorySummary]

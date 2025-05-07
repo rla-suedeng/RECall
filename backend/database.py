@@ -1,14 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-# ✅ SQLite 예시 (PostgreSQL, MySQL 등으로 바꿀 수 있음)
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
+Base = declarative_base()
 # ✅ DB 엔진 생성
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+    SQLALCHEMY_DATABASE_URL, echo=True)
 
 # ✅ 세션 클래스
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

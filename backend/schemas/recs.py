@@ -12,28 +12,46 @@ class CategoryEnum(str, Enum):
 
 
 class RecBase(BaseModel):
-    u_id: UUID
-    content:str
+    r_id:int
     file: str
-    date: Optional[date]
+    
+    
+    
+
+class RecCreate(BaseModel):
+    content:Optional[str] = None
+    title:str
+    file: str
+    r_date: Optional[date] = None
     category: CategoryEnum
-    author_id: UUID
 
-class RecCreate(RecBase):
-    pass
+    model_config = {
+        "from_attributes": True
+    }
+    
 
-class RecGet(RecBase):
-    r_id: UUID
+class RecDetailGet(RecBase):
+    content:Optional[str] = None
+    title:str
+    r_date: Optional[date] = None
+    category: CategoryEnum
+    author_name : Optional[str] = None
+    
+    model_config = {
+        "from_attributes": True
+    }
+    
 
 class RecUpdate(BaseModel):
-    content: Optional[str]
-    file: Optional[str]
-    date: Optional[date]
-    category: Optional[CategoryEnum]
+    title:Optional[str] = None
+    content: Optional[str] = None
+    file: Optional[str]= None
+    r_date: Optional[date] = None
+    category: Optional[CategoryEnum]= None
 
 
 class RecDelete(BaseModel):
-    r_id: UUID
+    r_id: int
 
 
 

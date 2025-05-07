@@ -4,27 +4,19 @@ from uuid import UUID
 from datetime import date, datetime
 
 class HistoryBase(BaseModel):
-    u_id: UUID
-    r_id: int
-    date: date
-
-class HistoryCreate(HistoryBase):
-    pass
-
-class HistoryGet(HistoryBase):
-    id: int
-
-
-class ChatBase(BaseModel):
     h_id: int
     r_id: int
-    sender: UUID  # "user" 또는 "gemini"
-    text: str
-    timestamp: datetime
+    date: date
     
-class ChatCreate(ChatBase):
-    pass
+
+class ChatBase(BaseModel): 
+    u_id: str  # "user" 또는 "gemini"
+    content: str
+   
+    
+class ChatGet(ChatBase):
+    timestamp: datetime
 
 
-class ChatHistoryResponse(BaseModel):
-    history: List[ChatBase]
+# class Message(BaseModel):
+
