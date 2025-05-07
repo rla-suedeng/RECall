@@ -12,7 +12,12 @@ class Service {
 
   static ProviderContainer registerServices() {
     final container = ProviderContainer();
+    final dio = Dio();
+    final myDio = MyDio(dio: dio);
+    GetIt.I.registerSingleton(myDio);
     final apiService = GetIt.I.registerSingleton(ApiService());
+    final userApi = UserApi(myDio);
+    GetIt.I.registerSingleton(userApi);
     final secureStorageSerivce = GetIt.I.registerSingleton(
       SecureStorageService()..init(),
     );

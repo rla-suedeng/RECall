@@ -8,9 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:template/app/api/dio_client.dart';
 import 'package:template/app/auth/firebase_auth_service.dart';
 
+import 'package:dio/dio.dart';
 import 'package:template/app/api/api_service.dart';
+import 'package:template/app/api/user_api.dart';
 import 'package:template/app/auth/auth_service.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/service/secure_storage_service.dart';

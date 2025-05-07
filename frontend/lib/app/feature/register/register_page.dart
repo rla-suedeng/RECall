@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:template/app/api/user_api.dart';
 import 'package:template/app/theme/colors.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,7 +15,8 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final nameController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
   final emailController = TextEditingController();
   final birthDateController = TextEditingController();
   final passwordController = TextEditingController();
@@ -26,7 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // ✅ 키보드 올라올 때 화면 자동 줄이기
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -34,7 +36,7 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight, // ✅ 최소 높이를 화면 높이에 맞춘다
+                  minHeight: constraints.maxHeight,
                 ),
                 child: IntrinsicHeight(
                   // ✅ Column 높이를 자식에 맞추기
@@ -57,9 +59,18 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       // --- TextFields ---
                       TextField(
-                        controller: nameController,
+                        controller: firstNameController,
                         decoration: const InputDecoration(
-                          labelText: 'Full Name',
+                          labelText: 'First Name',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: lastNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Last Name',
                           prefixIcon: Icon(Icons.person_outline),
                         ),
                       ),
@@ -143,7 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           RadioListTile<String>(
                             title: const Text('Reminder'),
-                            value: 'Reminder',
+                            value: 'reminder',
                             groupValue: _selectedRole,
                             onChanged: (value) {
                               setState(() {
@@ -153,7 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           RadioListTile<String>(
                             title: const Text('Recorder'),
-                            value: 'Recorder',
+                            value: 'recorder',
                             groupValue: _selectedRole,
                             onChanged: (value) {
                               setState(() {
@@ -170,24 +181,74 @@ class _RegisterPageState extends State<RegisterPage> {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: () async {
-                            final authService = GetIt.I<FirebaseAuthService>();
-                            try {
-                              final user = await authService.signUpWithEmail(
-                                emailController.text.trim(),
-                                passwordController.text.trim(),
+                            final email = emailController.text.trim();
+                            final password = passwordController.text.trim();
+                            final confirmPassword =
+                                confirmPasswordController.text.trim();
+
+                            if (password != confirmPassword) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => const AlertDialog(
+                                  title: Text('Passwords do not match'),
+                                  content: Text('Please check your password.'),
+                                ),
                               );
+                              return;
+                            }
+                            final authService = GetIt.I<FirebaseAuthService>();
+                            final userApi = GetIt.I<UserApi>();
+
+                            try {
+                              // firebase register
+                              final user = await authService.signUpWithEmail(
+                                  email, password);
                               if (user != null) {
-                                debugPrint('✅ 회원가입 성공: ${user.email}');
-                                if (_selectedRole == 'Recorder') {
-                                  context.go(Routes
-                                      .recorderRegister); // ✅ Recorder면 등록 페이지로
+                                debugPrint(
+                                    '✅ Firebase Register Clear: ${user.uid}');
+                                // save to FastAPI DB
+                                final result = await userApi.register(
+                                  uId: user.uid,
+                                  password: password, //해시 처리
+                                  role: _selectedRole ?? "reminder",
+                                  fName: firstNameController.text.trim(),
+                                  lName: lastNameController.text.trim(),
+                                  birthday: birthDateController.text.trim(),
+                                  email: email,
+                                  pId: null, //추후 연결
+                                );
+                                if (result.isSuccess) {
+                                  final user = result.data;
+                                  debugPrint('✅ DB 등록 성공: ${user.uId}');
+
+                                  // 역할에 따라 페이지 이동
+                                  if (_selectedRole == 'Recorder') {
+                                    context.go(Routes.recorderRegister);
+                                  } else {
+                                    context.go(Routes.login);
+                                  }
                                 } else {
-                                  context
-                                      .go(Routes.login); // ✅ Reminder면 로그인 페이지로
+                                  final error = result.error;
+                                  debugPrint('❌ DB 등록 실패: ${error.message}');
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Register Failed'),
+                                      content: Text(
+                                          'Failed to save user info: ${error.message}'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('OK'),
+                                        )
+                                      ],
+                                    ),
+                                  );
                                 }
                               }
                             } catch (e) {
-                              debugPrint('❌ 회원가입 실패: $e');
+                              debugPrint('❌ Regiset Fail: $e');
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
