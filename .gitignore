@@ -56,3 +56,9 @@ windows/Flutter/ephemeral/
 
 # Linux 관련
 linux/Flutter/ephemeral/
+
+/.history
+
+backend/mydb.sql
+frontend/windows/flutter/generated_plugins.cmake
+frontend/windows/flutter/generated_plugins.cmake

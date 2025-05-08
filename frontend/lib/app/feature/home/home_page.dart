@@ -25,6 +25,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     fetchUserInfo();
+    user = GetIt.I<UserModel>();
+    isLoading = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_popupShown) {

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:template/app/constants/api_constants.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart';
 
 Future<UserModel> loginWithEmail({
   required String email,
@@ -21,7 +22,8 @@ Future<UserModel> loginWithEmail({
 
     if (user != null) {
       // ✅ 로그인 성공 → ID 토큰 획득
-      final idToken = await user.getIdToken();
+      final idToken = await user.getIdToken(true);
+      await Future.delayed(const Duration(seconds: 1));
       print('🔥 로그인 성공, 토큰: $idToken');
 
       // ✅ 백엔드로 토큰 전송
@@ -29,6 +31,10 @@ Future<UserModel> loginWithEmail({
         await sendIdTokenToBackend(idToken);
 
         final userModel = await fetchUserInfo(user.uid, idToken);
+        if (GetIt.I.isRegistered<UserModel>()) {
+          GetIt.I.unregister<UserModel>();
+        }
+        GetIt.I.registerSingleton<UserModel>(userModel);
         return userModel;
       } else {
         throw Exception("❌ 로그인 실패: ID 토큰이 null입니다.");

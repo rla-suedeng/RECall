@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:template/app/api/rec_api.dart';
+import 'package:template/app/models/rec_model.dart';
+import 'package:template/app/models/user_model.dart';
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
+import 'package:template/app/service/firebase_storage_service.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
+import 'package:template/app/theme/colors.dart';
+import 'package:template/app/api/user_api.dart';
+import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 
 class AddRecordPage extends StatefulWidget {
   const AddRecordPage({super.key});
@@ -19,13 +28,22 @@ class _AddRecordPageState extends State<AddRecordPage> {
   final withWhomController = TextEditingController();
   final whatController = TextEditingController();
 
+  String? uploadedImageUrl;
+
   String? selectedCategory;
   final List<String> categories = [
     'Family',
     'Travel',
     'Childhood',
-    'Special Events',
+    'Special',
+    'ETC.',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,30 +65,45 @@ class _AddRecordPageState extends State<AddRecordPage> {
               // 이미지 업로드 영역
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: Colors.white,
                   border: Border.all(
-                      color: Colors.grey[300]!,
+                      color: AppColors.secondary,
                       style: BorderStyle.solid,
                       width: 2),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.add_photo_alternate_outlined,
-                        size: 48, color: Colors.grey),
-                    const SizedBox(height: 12),
-                    const Text('Drag photos here or choose from:'),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _uploadOption(Icons.camera_alt_outlined, 'Camera'),
-                        _uploadOption(Icons.photo_outlined, 'Gallery'),
-                        _uploadOption(Icons.cloud_upload_outlined, 'Cloud'),
-                      ],
-                    ),
+                    if (uploadedImageUrl != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          height: 220, // 원하는 높이
+                          color: Colors.grey[200], // optional: 배경색 또는 로딩 대비
+                          child: Image.network(
+                            uploadedImageUrl!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      const Icon(Icons.add_photo_alternate_outlined,
+                          size: 48, color: AppColors.secondary),
+                      const SizedBox(height: 12),
+                      const Text('Drag photos here or choose from:'),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _uploadOption(Icons.camera_alt_outlined, 'Camera'),
+                          _uploadOption(Icons.photo_outlined, 'Gallery'),
+                          _uploadOption(Icons.cloud_upload_outlined, 'Cloud'),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -174,9 +207,47 @@ class _AddRecordPageState extends State<AddRecordPage> {
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.save_alt),
                   label: const Text('Save Memory'),
-                  onPressed: () {
+                  onPressed: () async {
+                    final user = GetIt.I<UserModel>();
+                    final userId = user.uId;
+                    final idToken =
+                        await FirebaseAuth.instance.currentUser?.getIdToken();
+
+                    final formattedDate = dateController.text.isNotEmpty
+                        ? dateController.text
+                        : DateFormat('yyyy-MM-dd').format(DateTime.now());
+                    final content = '''
+                                  Where: ${whereController.text}
+                                  With Whom: ${withWhomController.text}
+                                  What Happened: ${whatController.text}
+                                  Notes: ${descriptionController.text}''';
+                    final rec = RecModel(
+                        uId: userId,
+                        title: titleController.text.trim(),
+                        content: content,
+                        fileUrl: uploadedImageUrl,
+                        r_date: formattedDate,
+                        category: selectedCategory?.toLowerCase() ?? 'special',
+                        author: user.fName);
+
+                    final recApi = RecApi(idToken);
+                    final success = await recApi.createRec(rec);
+
+                    if (success) {
+                      debugPrint('✅ Rec 저장 성공');
+                      if (context.mounted) {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go(Routes.home);
+                        }
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('❌ 기록 저장 실패')),
+                      );
+                    }
                     debugPrint('✅ Memory Saved: ${titleController.text}');
-                    Navigator.pop(context);
                   },
                 ),
               ),
@@ -194,8 +265,36 @@ class _AddRecordPageState extends State<AddRecordPage> {
       children: [
         IconButton(
           icon: Icon(icon, size: 32),
-          onPressed: () {
+          onPressed: () async {
             debugPrint('Clicked: $label');
+
+            final firebaseService = FirebaseStorageService();
+
+            try {
+              final user = FirebaseAuth.instance.currentUser;
+              final userId = user?.uid ?? 'anonymous'; // ✅ 로그인된 유저 ID 사용
+
+              final url =
+                  await firebaseService.pickAndUploadImage(userId: userId);
+
+              if (url != null) {
+                setState(() {
+                  uploadedImageUrl = url;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('✅ 이미지 업로드 성공')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('❌ 이미지 선택이 취소되었습니다.')),
+                );
+              }
+            } catch (e) {
+              debugPrint('❌ 이미지 업로드 실패: $e');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('오류 발생: $e')),
+              );
+            }
           },
         ),
         Text(label, style: const TextStyle(fontSize: 12)),
@@ -212,8 +311,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
     );
     if (pickedDate != null) {
       setState(() {
-        dateController.text =
-            "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+        dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
   }
