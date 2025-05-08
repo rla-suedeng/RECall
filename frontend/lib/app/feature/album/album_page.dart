@@ -3,6 +3,11 @@ import 'package:go_router/go_router.dart'; // GoRouter 사용 시
 import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/routing/router_service.dart';
+import 'package:template/app/models/rec_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:template/app/api/rec_api.dart';
+import 'package:template/app/models/user_model.dart';
+import 'package:get_it/get_it.dart';
 
 class AlbumPage extends StatefulWidget {
   const AlbumPage({super.key});
@@ -14,16 +19,52 @@ class AlbumPage extends StatefulWidget {
 class _AlbumPageState extends State<AlbumPage> {
   String selectedCategory = 'All Categories';
   String selectedSort = 'Newest First';
+  String keyword = '';
+  List<RecModel> allRecs = [];
+  bool isLoading = true;
+  //List<RecModel> filteredRecs = [];
 
-  final List<String> dummyImages = List.generate(
-    12,
-    (index) => 'assets/images/dummy${(index % 5) + 1}.jpg',
-  );
+  @override
+  void initState() {
+    super.initState();
+    getRecs();
+  }
+
+  Future<void> getRecs() async {
+    try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token == null) throw Exception("No token");
+      final recApi = RecApi(token);
+      final user = GetIt.I<UserModel>();
+      final filteredCategory = (selectedCategory != 'All Categories')
+          ? selectedCategory.toLowerCase()
+          : null;
+      final order = selectedSort == 'Newest First' ? 'desc' : 'asc';
+
+      final recs = await recApi.getRecs(
+        category: filteredCategory,
+        keyword: keyword,
+        order: order,
+      );
+
+      setState(() {
+        allRecs = recs;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('❌ Error fetching recs: $e');
+    }
+  }
+
+  // final List<String> dummyImages = List.generate(
+  //   12,
+  //   (index) => 'assets/images/dummy${(index % 5) + 1}.jpg',
+  // );
 
   final List<Map<String, String>> photos = List.generate(18, (index) {
     return {
       'date': '2025-05-${(index % 30) + 1}',
-      'category': ['Family', 'Travel', 'Events', 'Childhood'][index % 4],
+      'category': ['family', 'Travel', 'Special', 'Childhood'][index % 4],
     };
   });
 
@@ -77,7 +118,8 @@ class _AlbumPageState extends State<AlbumPage> {
                           'Family',
                           'Travel',
                           'Childhood',
-                          'Events'
+                          'Special',
+                          'Etc'
                         ].map((cat) {
                           return DropdownMenuItem(
                             value: cat,
@@ -93,7 +135,11 @@ class _AlbumPageState extends State<AlbumPage> {
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) {
-                            setState(() => selectedCategory = val);
+                            setState(() {
+                              selectedCategory = val;
+                              isLoading = true;
+                            });
+                            getRecs();
                           }
                         },
                       ),
@@ -135,7 +181,11 @@ class _AlbumPageState extends State<AlbumPage> {
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) {
-                            setState(() => selectedSort = val);
+                            setState(() {
+                              selectedSort = val;
+                              isLoading = true;
+                            });
+                            getRecs();
                           }
                         },
                       ),
@@ -164,12 +214,16 @@ class _AlbumPageState extends State<AlbumPage> {
                   )
                 ],
               ),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextField(
+                decoration: const InputDecoration(
                   icon: Icon(Icons.search, color: Colors.grey),
                   hintText: 'Search photos...',
                   border: InputBorder.none,
                 ),
+                onChanged: (val) {
+                  setState(() => keyword = val);
+                },
+                onSubmitted: (_) => getRecs(),
               ),
             ),
           ),
@@ -178,36 +232,49 @@ class _AlbumPageState extends State<AlbumPage> {
 
           /// 사진 그리드
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: filteredPhotos.length,
-              itemBuilder: (context, index) {
-                final photo = filteredPhotos[index];
-                final imagePath = dummyImages[index % dummyImages.length];
-
-                return GestureDetector(
-                  onTap: () {
-                    context.push(Routes.record, extra: {
-                      'imagePath': imagePath,
-                      'date': photo['date'],
-                      'category': photo['category'],
-                    });
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      imagePath,
-                      fit: BoxFit.cover,
+            child: isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
                     ),
+                    itemCount: allRecs.length,
+                    itemBuilder: (context, index) {
+                      final rec = allRecs[index];
+                      //final photo = filteredPhotos[index];
+                      //final imagePath = dummyImages[index % dummyImages.length];
+
+                      return GestureDetector(
+                        onTap: () {
+                          context.push(Routes.record, extra: rec);
+                          {
+                            //'imagePath': imagePath,
+                            // 'date': photo['date'],
+                            // 'category': photo['category'],
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            rec.fileUrl ?? '',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.broken_image),
+                          ),
+                          // child: Image.asset(
+                          //   imagePath,
+                          //   fit: BoxFit.cover,
+                          // ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

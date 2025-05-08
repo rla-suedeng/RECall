@@ -226,7 +226,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
                         title: titleController.text.trim(),
                         content: content,
                         fileUrl: uploadedImageUrl,
-                        r_date: formattedDate,
+                        date: formattedDate,
                         category: selectedCategory?.toLowerCase() ?? 'etc',
                         author: user.fName);
 

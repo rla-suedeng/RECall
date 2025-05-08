@@ -6,7 +6,7 @@ class RecModel {
   final String title; // title
   final String? content; // 메모리 설명
   final String? fileUrl; // Firebase Storage의 다운로드 URL
-  final String? r_date; // yyyy-MM-dd 형식
+  final String? date; // yyyy-MM-dd 형식
   final String category; // childhood, family, travel, special
   final String? author; // 생성 유저 이름 등
 
@@ -16,19 +16,19 @@ class RecModel {
     required this.title,
     this.content,
     this.fileUrl,
-    this.r_date,
+    this.date,
     required this.category,
     this.author,
   });
 
   factory RecModel.fromJson(Map<String, dynamic> json) => RecModel(
-        rId: json['r_id'],
-        uId: json['u_id'],
-        title: json['title'],
+        rId: json['r_id']?.toString(),
+        uId: json['u_id'] ?? '',
+        title: json['title'] ?? 'Untitled',
         content: json['content'],
         fileUrl: json['file'],
-        r_date: json['date'],
-        category: json['category'],
+        date: json['r_date'] ?? json['date'],
+        category: json['category'] ?? 'etc',
         author: json['author'],
       );
 
@@ -37,7 +37,7 @@ class RecModel {
         'title': title,
         'content': content,
         'file': fileUrl,
-        'r_date': r_date ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        'r_date': date ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
         'category': category,
         'author': author,
       };
