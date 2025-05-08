@@ -12,6 +12,7 @@ import 'package:template/app/feature/album/album_page.dart';
 import 'package:template/app/feature/history/chat_history_page.dart';
 import 'package:template/app/feature/user/profile_page.dart';
 import 'package:template/app/feature/record/record_page.dart';
+import 'package:template/app/models/rec_model.dart';
 
 extension GoRouterX on GoRouter {
   BuildContext? get context => configuration.navigatorKey.currentContext;
@@ -115,10 +116,13 @@ class RouterService {
           },
         ),
         GoRoute(
-          path: Routes.record,
+          path: '/record/:id',
+          name: Routes.record,
           pageBuilder: (context, state) {
-            final data = state.extra as Map<String, dynamic>? ?? {};
-            return MaterialPage(child: RecordPage(data: data));
+            final recId = int.tryParse(state.pathParameters['id'] ?? '');
+            return recId != null
+                ? MaterialPage(child: RecordPage(recId: recId))
+                : const MaterialPage(child: ErrorPage()); // 예외 처리
           },
         ),
       ], // TODO: Add routes

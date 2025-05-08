@@ -54,4 +54,21 @@ class RecApi {
       throw Exception('Failed to fetch recs');
     }
   }
+
+  Future<RecModel> getRec(int recId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/rec/$recId'),
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return RecModel.fromJson(json);
+    } else {
+      throw Exception('Failed to load rec: ${response.statusCode}');
+    }
+  }
 }

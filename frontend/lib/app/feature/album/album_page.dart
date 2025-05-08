@@ -252,7 +252,10 @@ class _AlbumPageState extends State<AlbumPage> {
 
                       return GestureDetector(
                         onTap: () {
-                          context.push(Routes.record, extra: rec);
+                          context.pushNamed(
+                            Routes.record,
+                            pathParameters: {'id': rec.rId ?? ''},
+                          );
                           {
                             //'imagePath': imagePath,
                             // 'date': photo['date'],
