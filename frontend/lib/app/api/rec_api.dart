@@ -71,4 +71,40 @@ class RecApi {
       throw Exception('Failed to load rec: ${response.statusCode}');
     }
   }
+
+  Future<bool> deleteRec(int recId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/rec/$recId'),
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    return response.statusCode == 204;
+  }
+
+  Future<RecModel?> putRec(int recId, RecModel updatedRec) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/rec/$recId'),
+        headers: {
+          'Authorization': 'Bearer $_token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(updatedRec.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return RecModel.fromJson(decoded);
+      } else {
+        print("❌ Rec 수정 실패: ${response.statusCode} - ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("❌ 예외 발생 during putRec: $e");
+      return null;
+    }
+  }
 }

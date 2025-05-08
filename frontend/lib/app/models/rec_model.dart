@@ -8,7 +8,7 @@ class RecModel {
   final String? fileUrl; // Firebase Storage의 다운로드 URL
   final String? date; // yyyy-MM-dd 형식
   final String category; // childhood, family, travel, special
-  final String? author; // 생성 유저 이름 등
+  final String? authorName; // 생성 유저 이름 등
 
   RecModel({
     this.rId,
@@ -18,7 +18,7 @@ class RecModel {
     this.fileUrl,
     this.date,
     required this.category,
-    this.author,
+    this.authorName,
   });
 
   factory RecModel.fromJson(Map<String, dynamic> json) => RecModel(
@@ -29,7 +29,7 @@ class RecModel {
         fileUrl: json['file'],
         date: json['r_date'] ?? json['date'],
         category: json['category'] ?? 'etc',
-        author: json['author'],
+        authorName: json['author_name'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -39,6 +39,28 @@ class RecModel {
         'file': fileUrl,
         'r_date': date ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
         'category': category,
-        'author': author,
+        'author': authorName,
       };
+
+  RecModel copyWith({
+    String? rId,
+    String? uId,
+    String? title,
+    String? content,
+    String? fileUrl,
+    String? date,
+    String? category,
+    String? authorName,
+  }) {
+    return RecModel(
+      rId: rId ?? this.rId,
+      uId: uId ?? this.uId,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      fileUrl: fileUrl ?? this.fileUrl,
+      date: date ?? this.date,
+      category: category ?? this.category,
+      authorName: authorName ?? this.authorName,
+    );
+  }
 }

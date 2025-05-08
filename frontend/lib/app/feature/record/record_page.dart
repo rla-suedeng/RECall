@@ -4,6 +4,7 @@ import 'package:template/app/models/rec_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:template/app/routing/router_service.dart';
+import 'package:template/app/theme/colors.dart';
 
 class RecordPage extends StatefulWidget {
   final int recId;
@@ -37,60 +38,197 @@ class _RecordPageState extends State<RecordPage> {
     }
   }
 
+  Future<void> deleteRec() async {
+    try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      final api = RecApi(token);
+      await api.deleteRec(widget.recId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('✅ 기록 삭제 성공')));
+        context.go(Routes.album);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('❌ 삭제 실패: $e')));
+    }
+  }
+
+  void _showEditDialog() {
+    final titleController = TextEditingController(text: rec?.title);
+    final content = rec?.content ?? '';
+    final whereController = TextEditingController(
+        text: RegExp(r'Where:\s*(.*)').firstMatch(content)?.group(1) ?? '');
+    final withWhomController = TextEditingController(
+        text: RegExp(r'With Whom:\s*(.*)').firstMatch(content)?.group(1) ?? '');
+    final whatController = TextEditingController(
+        text: RegExp(r'What Happened:\s*(.*)').firstMatch(content)?.group(1) ??
+            '');
+    final noteController = TextEditingController(
+        text: RegExp(r'Notes:\s*(.*)').firstMatch(content)?.group(1) ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Memory'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: whereController,
+                decoration: const InputDecoration(labelText: 'Where'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: withWhomController,
+                decoration: const InputDecoration(labelText: 'With Whom'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: whatController,
+                decoration: const InputDecoration(labelText: 'What Happened'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: noteController,
+                decoration: const InputDecoration(labelText: 'Notes'),
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newContent = '''
+Where: ${whereController.text.trim()}
+With Whom: ${withWhomController.text.trim()}
+What Happened: ${whatController.text.trim()}
+Notes: ${noteController.text.trim()}''';
+
+              final updatedRec = rec!.copyWith(
+                title: titleController.text.trim(),
+                content: newContent,
+              );
+
+              final token =
+                  await FirebaseAuth.instance.currentUser?.getIdToken();
+              final api = RecApi(token);
+              final result = await api.putRec(widget.recId, updatedRec);
+
+              if (result != null) {
+                setState(() => rec = result);
+                if (context.mounted) Navigator.pop(context);
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('❌ 저장 실패. 다시 시도해주세요.')));
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // final imagePath = data['imagePath'];
-    // final tag = data['tag'];
-    // final date = data['date'];
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (rec == null) return const Center(child: Text('Record not found'));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Memory Record'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _showEditDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Delete Record'),
+                content:
+                    const Text('Are you sure you want to delete this record?'),
+                actions: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                  TextButton(
+                    child: const Text('Delete'),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      deleteRec();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // if (imagePath != null)
-          //   Image.asset(imagePath,
-          //       height: 200, width: double.infinity, fit: BoxFit.cover),
-          if (rec!.fileUrl != null)
-            Image.network(
-              rec!.fileUrl!,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const Center(child: Icon(Icons.broken_image)),
-            ),
-          const SizedBox(height: 16),
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: Text('Category: ${rec!.category}'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.date_range),
-            title: Text('Date: ${rec!.date ?? 'Unknown'}'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: Text('Author: ${rec!.author ?? 'Unknown'}'),
-          ),
-          if (rec!.content != null) ...[
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (rec!.fileUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  rec!.fileUrl!,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      const Center(child: Icon(Icons.broken_image)),
+                ),
+              ),
+            const SizedBox(height: 24),
+            const Text('Title', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(rec!.title, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 16),
+            Row(children: [
+              const Icon(Icons.category, size: 20),
+              const SizedBox(width: 8),
+              Text('Category: ${rec!.category}')
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              const Icon(Icons.date_range, size: 20),
+              const SizedBox(width: 8),
+              Text('Date: ${rec!.date ?? 'Unknown'}')
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              const Icon(Icons.person, size: 20),
+              const SizedBox(width: 8),
+              Text('Author: ${rec!.authorName ?? 'Unknown'}')
+            ]),
+            const SizedBox(height: 16),
             const Divider(),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text('Memory Description',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(rec!.content!),
-            ),
-          ],
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
+            const Text('Memory Description',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(rec!.content ?? '-', style: const TextStyle(fontSize: 15)),
+            const SizedBox(height: 32),
+            SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
@@ -101,8 +239,8 @@ class _RecordPageState extends State<RecordPage> {
                 },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

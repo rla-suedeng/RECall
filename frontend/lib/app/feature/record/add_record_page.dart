@@ -222,13 +222,13 @@ class _AddRecordPageState extends State<AddRecordPage> {
                                   What Happened: ${whatController.text}
                                   Notes: ${descriptionController.text}''';
                     final rec = RecModel(
-                        uId: userId,
-                        title: titleController.text.trim(),
-                        content: content,
-                        fileUrl: uploadedImageUrl,
-                        date: formattedDate,
-                        category: selectedCategory?.toLowerCase() ?? 'etc',
-                        author: user.fName);
+                      uId: userId,
+                      title: titleController.text.trim(),
+                      content: content,
+                      fileUrl: uploadedImageUrl,
+                      date: formattedDate,
+                      category: selectedCategory?.toLowerCase() ?? 'etc',
+                    );
 
                     final recApi = RecApi(idToken);
                     final success = await recApi.createRec(rec);
