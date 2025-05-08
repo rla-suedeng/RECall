@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/api/rec_api.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:get_it/get_it.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class AlbumPage extends StatefulWidget {
   const AlbumPage({super.key});
@@ -264,11 +265,14 @@ class _AlbumPageState extends State<AlbumPage> {
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            rec.fileUrl ?? '',
+                          child: CachedNetworkImage(
+                            imageUrl: rec.fileUrl ?? '',
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.broken_image),
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Center(child: Icon(Icons.broken_image)),
                           ),
                           // child: Image.asset(
                           //   imagePath,

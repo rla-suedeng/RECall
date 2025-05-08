@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/theme/colors.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class RecordPage extends StatefulWidget {
   final int recId;
@@ -190,12 +191,15 @@ Notes: ${noteController.text.trim()}''';
             if (rec!.fileUrl != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  rec!.fileUrl!,
+                child: CachedNetworkImage(
+                  imageUrl: rec!.fileUrl!,
                   height: 220,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  errorWidget: (context, url, error) =>
                       const Center(child: Icon(Icons.broken_image)),
                 ),
               ),
