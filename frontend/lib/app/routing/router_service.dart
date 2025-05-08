@@ -76,7 +76,6 @@ class RouterService {
         GoRoute(
           path: Routes.home,
           builder: (context, state) {
-            // var args = state.extra;
             return const HomePage();
           },
         ),

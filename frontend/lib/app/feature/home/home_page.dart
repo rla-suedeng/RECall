@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:template/app/api/user_api.dart';
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/theme/colors.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:template/app/widgets/app_bar.dart';
+import 'package:template/app/models/user_model.dart';
+import 'package:get_it/get_it.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,9 +18,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   static bool _popupShown = false;
+  UserModel? user;
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
+    fetchUserInfo();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_popupShown) {
@@ -25,6 +32,31 @@ class _HomePageState extends State<HomePage> {
         _popupShown = true;
       }
     });
+  }
+
+  Future<void> fetchUserInfo() async {
+    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (idToken == null) {
+      print("❌ Firebase ID 토큰이 null입니다.");
+      return;
+    }
+    final userApi = GetIt.I<UserApi>();
+    userApi.setAuthToken(idToken);
+
+    final result = await userApi.getUser();
+
+    if (result.isSuccess) {
+      setState(() {
+        user = result.data;
+        isLoading = false;
+      });
+    } else {
+      final error = result.error;
+      print("❌ 유저 정보 불러오기 실패: ${error.message} (code: ${error.statusCode})");
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void _showWelcomePopup(BuildContext context) {
@@ -105,9 +137,12 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Good Afternoon,\nMary',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              Text(
+                isLoading
+                    ? 'Good Afternoon,\n...'
+                    : 'Good Afternoon, \n${user?.fName ?? 'User'}',
+                style:
+                    const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(

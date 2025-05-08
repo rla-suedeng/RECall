@@ -216,7 +216,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                 final result = await userApi.register(
                                   uId: user.uid,
                                   password: password, //해시 처리
-                                  role: _selectedRole == "recorder",
+                                  role: _selectedRole ==
+                                      "reminder", //reminder = 1
                                   fName: firstNameController.text.trim(),
                                   lName: lastNameController.text.trim(),
                                   birthday: birthDateController.text.trim(),
@@ -224,8 +225,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   pId: null, //추후 연결
                                 );
                                 if (result.isSuccess) {
-                                  final user = result.data;
-                                  debugPrint('✅ DB 등록 성공: ${user.uId}');
+                                  debugPrint('✅ DB 등록 성공: ${result.data}');
 
                                   // 역할에 따라 페이지 이동
                                   if (_selectedRole == 'recorder') {

@@ -12,7 +12,7 @@ class UserApi {
   }
 
   /// POST /register
-  Future<Result<UserModel>> register({
+  Future<Result<String>> register({
     required String uId,
     required String password,
     required bool role,
@@ -22,7 +22,7 @@ class UserApi {
     required String birthday,
     required String email,
   }) {
-    return _dio.post<UserModel>(
+    return _dio.post<String>(
       "/register",
       data: {
         "u_id": uId,
@@ -34,14 +34,14 @@ class UserApi {
         "birthday": birthday,
         "email": email,
       },
-      fromJson: (json) => UserModel.fromJson(json),
+      fromJson: (json) => json['message'] as String,
     );
   }
 
-  /// u_id로 사용자 조회
-  Future<Result<UserModel>> getUser(String uId) {
+  /// 사용자 조회
+  Future<Result<UserModel>> getUser() {
     return _dio.get<UserModel>(
-      "/users/$uId",
+      "/user",
       fromJson: (json) => UserModel.fromJson(json),
     );
   }
