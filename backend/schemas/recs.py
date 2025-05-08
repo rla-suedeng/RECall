@@ -9,6 +9,7 @@ class CategoryEnum(str, Enum):
     family = "family"
     travel = "travel"
     special = "special"
+    etc = "etc"
 
 
 class RecBase(BaseModel):
