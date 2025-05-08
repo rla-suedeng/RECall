@@ -18,6 +18,7 @@ class CategoryEnum(str, Enum):
     family = "family"
     travel = "travel" 
     special = "special"
+    etc = "etc"
     
 @router.post("/", response_model=RecDetailGet, status_code=status.HTTP_201_CREATED)
 def create_rec(

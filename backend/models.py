@@ -31,6 +31,7 @@ class CategoryEnum(str, enum.Enum):
     family = "family"
     travel = "travel"
     special = "special"
+    etc = "etc"
 
 class Rec(Base):
     __tablename__ = "rec"
