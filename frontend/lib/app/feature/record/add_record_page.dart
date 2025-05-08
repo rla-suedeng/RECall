@@ -36,7 +36,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
     'Travel',
     'Childhood',
     'Special',
-    'ETC.',
+    'ETC',
   ];
 
   @override
@@ -227,7 +227,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
                         content: content,
                         fileUrl: uploadedImageUrl,
                         r_date: formattedDate,
-                        category: selectedCategory?.toLowerCase() ?? 'special',
+                        category: selectedCategory?.toLowerCase() ?? 'etc',
                         author: user.fName);
 
                     final recApi = RecApi(idToken);
