@@ -32,7 +32,7 @@ def register_user(
     db.add(db_user)
     db.commit()
 
-    return {"u_id":f"{uid}" }
+    return {"message": "success"}
 
 @router.get("/user",response_model=UserBase)
 def get_user(
