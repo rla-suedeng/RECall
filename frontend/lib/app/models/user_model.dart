@@ -1,7 +1,7 @@
 class UserModel {
   final String uId;
-  final String role;
-  final String? pId; // 환자ID는 care일 경우만 있을 수 있음
+  final bool role;
+  final String? pId;
   final String fName;
   final String lName;
   final String birthday;

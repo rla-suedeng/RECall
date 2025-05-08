@@ -6,6 +6,7 @@ import 'package:template/app/routing/router_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:template/app/auth/firebase_auth_service.dart';
+import 'package:intl/intl.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -97,7 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           );
                           if (picked != null) {
                             birthDateController.text =
-                                '${picked.year}-${picked.month}-${picked.day}';
+                                DateFormat('yyyy-MM-dd').format(picked);
                           }
                         },
                         decoration: const InputDecoration(
@@ -206,11 +207,16 @@ class _RegisterPageState extends State<RegisterPage> {
                               if (user != null) {
                                 debugPrint(
                                     '✅ Firebase Register Clear: ${user.uid}');
+                                final token = await user.getIdToken();
+                                if (token == null)
+                                  throw Exception("No firebase token");
+
+                                userApi.setAuthToken(token);
                                 // save to FastAPI DB
                                 final result = await userApi.register(
                                   uId: user.uid,
                                   password: password, //해시 처리
-                                  role: _selectedRole ?? "reminder",
+                                  role: _selectedRole == "recorder",
                                   fName: firstNameController.text.trim(),
                                   lName: lastNameController.text.trim(),
                                   birthday: birthDateController.text.trim(),
@@ -222,7 +228,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   debugPrint('✅ DB 등록 성공: ${user.uId}');
 
                                   // 역할에 따라 페이지 이동
-                                  if (_selectedRole == 'Recorder') {
+                                  if (_selectedRole == 'recorder') {
                                     context.go(Routes.recorderRegister);
                                   } else {
                                     context.go(Routes.login);

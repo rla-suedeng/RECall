@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:template/app/model/some_model.dart';
+import 'package:template/app/models/some_model.dart';
 
 part 'home_state.freezed.dart';
 part 'home_state.g.dart';

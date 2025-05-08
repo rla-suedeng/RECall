@@ -7,11 +7,15 @@ class UserApi {
 
   UserApi(this._dio);
 
+  void setAuthToken(String token) {
+    _dio.dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
   /// POST /register
   Future<Result<UserModel>> register({
     required String uId,
     required String password,
-    required String role,
+    required bool role,
     String? pId,
     required String fName,
     required String lName,
