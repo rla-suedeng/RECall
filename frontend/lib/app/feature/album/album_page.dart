@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // GoRouter 사용 시
+import 'package:template/app/theme/colors.dart';
 import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/routing/router_service.dart';
@@ -237,51 +238,60 @@ class _AlbumPageState extends State<AlbumPage> {
                 ? const Center(
                     child: CircularProgressIndicator(),
                   )
-                : GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                    ),
-                    itemCount: allRecs.length,
-                    itemBuilder: (context, index) {
-                      final rec = allRecs[index];
-                      //final photo = filteredPhotos[index];
-                      //final imagePath = dummyImages[index % dummyImages.length];
-
-                      return GestureDetector(
-                        onTap: () {
-                          context.pushNamed(
-                            Routes.record,
-                            pathParameters: {'id': rec.rId ?? ''},
-                          );
-                          {
-                            //'imagePath': imagePath,
-                            // 'date': photo['date'],
-                            // 'category': photo['category'],
-                          }
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: rec.fileUrl ?? '',
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            errorWidget: (context, url, error) =>
-                                const Center(child: Icon(Icons.broken_image)),
-                          ),
-                          // child: Image.asset(
-                          //   imagePath,
-                          //   fit: BoxFit.cover,
-                          // ),
+                : allRecs.isEmpty
+                    ? const Center(
+                        child: Text(
+                        'No results found.',
+                        style: TextStyle(
+                            fontSize: 20, color: AppColors.textSecondary),
+                      ))
+                    : GridView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
                         ),
-                      );
-                    },
-                  ),
+                        itemCount: allRecs.length,
+                        itemBuilder: (context, index) {
+                          final rec = allRecs[index];
+                          //final photo = filteredPhotos[index];
+                          //final imagePath = dummyImages[index % dummyImages.length];
+
+                          return GestureDetector(
+                            onTap: () {
+                              context.pushNamed(
+                                Routes.record,
+                                pathParameters: {'id': rec.rId ?? ''},
+                              );
+                              {
+                                //'imagePath': imagePath,
+                                // 'date': photo['date'],
+                                // 'category': photo['category'],
+                              }
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: CachedNetworkImage(
+                                imageUrl: rec.fileUrl ?? '',
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => const Center(
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Center(
+                                        child: Icon(Icons.broken_image)),
+                              ),
+                              // child: Image.asset(
+                              //   imagePath,
+                              //   fit: BoxFit.cover,
+                              // ),
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
