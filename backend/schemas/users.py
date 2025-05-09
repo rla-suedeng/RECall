@@ -1,8 +1,9 @@
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from datetime import date, datetime
-from typing import Optional,List
+from typing import Optional,List,Dict
 from enum import Enum
+from models import CategoryEnum
 
 class Userinfo(BaseModel):
     u_id : str
@@ -36,3 +37,4 @@ class MemorySummary(BaseModel):
 class RootResponse(BaseModel):
     name: str
     recent_memory: List[MemorySummary]
+    num_rec:Dict[CategoryEnum, int]
