@@ -8,6 +8,21 @@ import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
+import 'package:template/app/api/rec_api.dart';
+import 'package:template/app/models/rec_model.dart';
+import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:convert'; // ✅ Import dart:convert for JSON handling
+
+String formatMonthYear(String? dateStr) {
+  if (dateStr == null) return 'Unknown';
+  try {
+    final parsed = DateFormat('yyyy-MM-dd').parse(dateStr);
+    return DateFormat('MMMM yyyy').format(parsed); // 예: June 1975
+  } catch (_) {
+    return 'Invalid date';
+  }
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,10 +36,13 @@ class _HomePageState extends State<HomePage> {
   UserModel? user;
   bool isLoading = true;
 
+  List<RecModel> recentRecs = [];
+  List<RecModel> allUserRecs = [];
   @override
   void initState() {
     super.initState();
     fetchUserInfo();
+    fetchRecentRecs();
     user = GetIt.I<UserModel>();
     isLoading = false;
 
@@ -59,6 +77,29 @@ class _HomePageState extends State<HomePage> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> fetchRecentRecs() async {
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final recApi = RecApi(token);
+    final recs = await recApi.getRecs(order: 'desc');
+    for (final rec in recs) {
+      debugPrint("👉 category: '${rec.category}'");
+    }
+    setState(() {
+      allUserRecs = recs;
+      recentRecs = recs.take(3).toList(); // 최근 3개
+      isLoading = false;
+    });
+  }
+
+  Map<String, int> get categoryCount {
+    final Map<String, int> counts = {};
+    for (final rec in allUserRecs) {
+      final cat = rec.category.toLowerCase();
+      counts[cat] = (counts[cat] ?? 0) + 1;
+    }
+    return counts;
   }
 
   void _showWelcomePopup(BuildContext context) {
@@ -207,19 +248,28 @@ class _HomePageState extends State<HomePage> {
                     'Recent Memories',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  TextButton(onPressed: () {}, child: const Text('View All')),
+                  TextButton(
+                      onPressed: () {
+                        context.go(Routes.album);
+                      },
+                      child: const Text('View All')),
                 ],
               ),
               const SizedBox(height: 12),
               SizedBox(
                 height: 120,
-                child: ListView(
+                child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  children: [
-                    _recentMemoryCard('Beach Vacation', 'June 1975'),
-                    _recentMemoryCard('Thanksgiving', 'November 1983'),
-                    _recentMemoryCard('Wedding', 'May 1965'),
-                  ],
+                  itemCount: recentRecs.length,
+                  itemBuilder: (context, index) {
+                    final rec = recentRecs[index];
+                    return _recentMemoryCard(rec);
+                  },
+                  // children: [
+                  //   _recentMemoryCard('Beach Vacation', 'June 1975'),
+                  //   _recentMemoryCard('Thanksgiving', 'November 1983'),
+                  //   _recentMemoryCard('Wedding', 'May 1965'),
+                  // ],
                 ),
               ),
               const SizedBox(height: 32),
@@ -253,18 +303,19 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 16),
               Center(
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    _albumCard('Family', '42 memories', Icons.favorite_border),
-                    _albumCard('Travel', '28 memories', Icons.card_travel),
-                    _albumCard('Childhood', '19 memories', Icons.child_care),
-                    _albumCard(
-                        'Special Events', '36 memories', Icons.star_border),
-                  ],
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                          _albumCard('family', Icons.favorite_border),
+                          _albumCard('travel', Icons.card_travel),
+                          _albumCard('childhood', Icons.child_care),
+                          _albumCard('special', Icons.star_border),
+                        ],
+                      ),
               ),
               const SizedBox(height: 32),
               const Text(
@@ -297,58 +348,120 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Recent Memory Card
-  Widget _recentMemoryCard(String title, String date) {
+  Widget _recentMemoryCard(RecModel rec) {
+    final title = rec.title;
+    final date = rec.date != null
+        ? DateFormat.yMMMM().format(DateTime.parse(rec.date!)) // 예: June 1975
+        : 'Unknown';
+    final imageUrl = rec.fileUrl;
+
     return Container(
-      width: 140,
+      width: 130,
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.white,
         border: Border.all(color: Colors.grey[300]!),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(date, style: const TextStyle(color: Colors.grey)),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 이미지 영역: 고정 높이
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl ?? '',
+              height: 60,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                height: 80,
+                color: Colors.grey[200],
+              ),
+              errorWidget: (context, url, error) => Container(
+                height: 60,
+                color: Colors.grey[200],
+                child: const Icon(Icons.broken_image, size: 24),
+              ),
+            ),
+          ),
+          // 텍스트 영역: 유동적
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min, // 핵심!
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  date,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   // Album Card
-  Widget _albumCard(String title, String subtitle, IconData icon) {
-    return Container(
-      width: 160,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.softBlue,
+  Widget _albumCard(String category, IconData icon) {
+    final count = categoryCount[category.toLowerCase()] ?? 0;
+    final title = category;
+    final subtitle = '$count memories';
+
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(
+          Routes.album,
+          queryParameters: {'category': category.toLowerCase()},
+        );
+      },
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.softBlue,
+              ),
+              child: Icon(
+                icon,
+                size: 28,
+                color: AppColors.secondary,
+              ),
             ),
-            child: Icon(
-              icon,
-              size: 28,
-              color: AppColors.secondary,
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(subtitle, style: const TextStyle(color: Colors.grey)),
-        ],
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.grey),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
