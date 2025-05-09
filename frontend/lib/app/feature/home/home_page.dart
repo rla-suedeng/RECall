@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
 import 'package:template/app/api/user_api.dart';
+import 'package:template/app/api/home_api.dart';
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/theme/colors.dart';
@@ -36,13 +37,14 @@ class _HomePageState extends State<HomePage> {
   UserModel? user;
   bool isLoading = true;
 
+  String userName = 'User';
   List<RecModel> recentRecs = [];
-  List<RecModel> allUserRecs = [];
+  Map<String, int> categoryCounts = {};
+
   @override
   void initState() {
     super.initState();
-    fetchUserInfo();
-    fetchRecentRecs();
+    fetchHomeInfo();
     user = GetIt.I<UserModel>();
     isLoading = false;
 
@@ -54,52 +56,59 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> fetchUserInfo() async {
-    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    if (idToken == null) {
-      print("❌ Firebase ID 토큰이 null입니다.");
-      return;
-    }
-    final userApi = GetIt.I<UserApi>();
-    userApi.setAuthToken(idToken);
+  // Future<void> fetchUserInfo() async {
+  //   final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+  //   if (idToken == null) {
+  //     print("❌ Firebase ID 토큰이 null입니다.");
+  //     return;
+  //   }
+  //   final userApi = GetIt.I<UserApi>();
+  //   userApi.setAuthToken(idToken);
 
-    final result = await userApi.getUser();
+  //   final result = await userApi.getUser();
 
-    if (result.isSuccess) {
+  //   if (result.isSuccess) {
+  //     setState(() {
+  //       user = result.data;
+  //       isLoading = false;
+  //     });
+  //   } else {
+  //     final error = result.error;
+  //     print("❌ 유저 정보 불러오기 실패: ${error.message} (code: ${error.statusCode})");
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+
+  Future<void> fetchHomeInfo() async {
+    try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      final homeApi = HomeApi(token);
+      final data = await homeApi.getHomeInfo(); // 여기가 실패하면 null
+
+      final String name = data['name'] ?? 'User';
+      final List<dynamic> recent = data['recent_memory'] ?? [];
+      final Map<String, dynamic> counts =
+          Map<String, dynamic>.from(data['num_rec'] ?? {});
+
+      print("🟢 전체 데이터: $data");
+      print("🟢 recent_memory: ${data['recent_memory']}");
       setState(() {
-        user = result.data;
-        isLoading = false;
+        userName = name;
+        recentRecs =
+            recent.map((e) => RecModel.fromJson(e)).toList(); // 단순 구조로 맞추면 됨
+        categoryCounts =
+            counts.map((k, v) => MapEntry(k.toLowerCase(), v as int));
       });
-    } else {
-      final error = result.error;
-      print("❌ 유저 정보 불러오기 실패: ${error.message} (code: ${error.statusCode})");
+    } catch (e) {
+      print("❌ 홈 정보 가져오기 실패: $e");
       setState(() {
-        isLoading = false;
+        userName = 'User';
+        recentRecs = [];
+        categoryCounts = {};
       });
     }
-  }
-
-  Future<void> fetchRecentRecs() async {
-    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    final recApi = RecApi(token);
-    final recs = await recApi.getRecs(order: 'desc');
-    for (final rec in recs) {
-      debugPrint("👉 category: '${rec.category}'");
-    }
-    setState(() {
-      allUserRecs = recs;
-      recentRecs = recs.take(3).toList(); // 최근 3개
-      isLoading = false;
-    });
-  }
-
-  Map<String, int> get categoryCount {
-    final Map<String, int> counts = {};
-    for (final rec in allUserRecs) {
-      final cat = rec.category.toLowerCase();
-      counts[cat] = (counts[cat] ?? 0) + 1;
-    }
-    return counts;
   }
 
   void _showWelcomePopup(BuildContext context) {
@@ -183,7 +192,7 @@ class _HomePageState extends State<HomePage> {
               Text(
                 isLoading
                     ? 'Good Afternoon,\n...'
-                    : 'Good Afternoon, \n${user?.fName ?? 'User'}',
+                    : 'Good Afternoon, \n${userName ?? 'User'}',
                 style:
                     const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
@@ -262,8 +271,7 @@ class _HomePageState extends State<HomePage> {
                   scrollDirection: Axis.horizontal,
                   itemCount: recentRecs.length,
                   itemBuilder: (context, index) {
-                    final rec = recentRecs[index];
-                    return _recentMemoryCard(rec);
+                    return _recentMemoryCard(recentRecs[index]);
                   },
                   // children: [
                   //   _recentMemoryCard('Beach Vacation', 'June 1975'),
@@ -415,7 +423,7 @@ class _HomePageState extends State<HomePage> {
 
   // Album Card
   Widget _albumCard(String category, IconData icon) {
-    final count = categoryCount[category.toLowerCase()] ?? 0;
+    final count = categoryCounts[category.toLowerCase()] ?? 0;
     final title = category;
     final subtitle = '$count memories';
 
