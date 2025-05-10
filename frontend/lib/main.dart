@@ -18,6 +18,8 @@ import 'package:template/app/auth/auth_service.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/service/secure_storage_service.dart';
 import 'package:template/app/theme/colors.dart';
+import 'package:get_it/get_it.dart';
+import 'package:template/app/models/user_model.dart';
 
 part 'service.dart';
 
@@ -30,7 +32,14 @@ void main() async {
       final serviceProviderContainer = Service.registerServices();
 
       RouterService.I.init();
-
+      GetIt.I.registerSingleton<UserModel>(UserModel(
+        uId: 'temp_uid',
+        role: true, // Replace with appropriate role
+        fName: 'John', // Replace with appropriate first name
+        lName: 'Doe', // Replace with appropriate last name
+        birthday: '2000-01-02', // Replace with appropriate birthday
+        email: 'example@example.com', // Replace with appropriate email
+      ));
       runApp(UncontrolledProviderScope(
         container: serviceProviderContainer,
         child: const App(),

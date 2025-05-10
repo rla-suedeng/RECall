@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:template/app/theme/colors.dart';
+import 'package:go_router/go_router.dart';
+import 'package:template/app/routing/router_service.dart';
 
 class RECallAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -48,7 +50,10 @@ class RECallAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(Icons.settings_outlined),
-          onPressed: onSettingsPressed ?? () {},
+          onPressed: onSettingsPressed ??
+              () {
+                context.go(Routes.profile);
+              },
         ),
       ],
     );

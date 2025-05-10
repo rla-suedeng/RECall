@@ -62,19 +62,38 @@ class _AlbumPageState extends State<AlbumPage> {
           ? selectedCategory?.toLowerCase()
           : null;
       final order = selectedSort == 'Newest First' ? 'desc' : 'asc';
-
+      if (!user.role) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Access Denied'),
+              content: const Text('Only reminders can access memory albums.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // 팝업 닫기
+                    context.go(Routes.home); // 홈으로 이동
+                  },
+                  child: const Text('Go to Home'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
       final recs = await recApi.getRecs(
         category: filteredCategory,
         keyword: keyword,
         order: order,
-      );
-
+      ); // 정상 호출
       setState(() {
         allRecs = recs;
         isLoading = false;
       });
     } catch (e) {
-      print('❌ Error fetching recs: $e');
+      debugPrint("❌ Error fetching recs: $e");
     }
   }
 

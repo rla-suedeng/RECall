@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
-import 'package:template/app/api/user_api.dart';
 import 'package:template/app/api/home_api.dart';
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
@@ -9,7 +8,6 @@ import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
-import 'package:template/app/api/rec_api.dart';
 import 'package:template/app/models/rec_model.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -45,7 +43,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     fetchHomeInfo();
-    user = GetIt.I<UserModel>();
+    final getIt = GetIt.I;
+    if (getIt.isRegistered<UserModel>()) {
+      user = GetIt.I<UserModel>();
+    }
     isLoading = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
