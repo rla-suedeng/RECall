@@ -273,11 +273,6 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return _recentMemoryCard(recentRecs[index]);
                   },
-                  // children: [
-                  //   _recentMemoryCard('Beach Vacation', 'June 1975'),
-                  //   _recentMemoryCard('Thanksgiving', 'November 1983'),
-                  //   _recentMemoryCard('Wedding', 'May 1965'),
-                  // ],
                 ),
               ),
               const SizedBox(height: 32),
@@ -374,7 +369,6 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 이미지 영역: 고정 높이
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: CachedNetworkImage(
@@ -392,12 +386,11 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          // 텍스트 영역: 유동적
           Padding(
             padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min, // 핵심!
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   title,

@@ -95,10 +95,12 @@ class RouterService {
           },
         ),
         GoRoute(
+          name: Routes.album,
           path: Routes.album,
           builder: (context, state) {
-            // var args = state.extra;
-            return const AlbumPage();
+            final category =
+                state.uri.queryParameters['category'] ?? 'All Categories';
+            return AlbumPage(initialCategory: category);
           },
         ),
         GoRoute(
