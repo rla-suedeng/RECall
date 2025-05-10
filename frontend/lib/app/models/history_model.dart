@@ -15,9 +15,9 @@ class HistoryModel {
 
   factory HistoryModel.fromJson(Map<String, dynamic> json) {
     return HistoryModel(
-      hId: json['h_id'],
-      rId: json['r_id'],
-      uId: json['u_id'],
+      hId: json['h_id'] ?? 0,
+      rId: json['r_id'] ?? 0,
+      uId: json['u_id'] ?? '',
       summary: json['summary'],
       date: json['date'],
     );

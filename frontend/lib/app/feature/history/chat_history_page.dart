@@ -5,6 +5,7 @@ import 'package:template/app/widgets/app_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/models/history_model.dart';
 import 'package:template/app/api/history_api.dart';
+import 'package:intl/intl.dart';
 
 class ChatHistoryPage extends StatefulWidget {
   const ChatHistoryPage({super.key});
@@ -14,33 +15,19 @@ class ChatHistoryPage extends StatefulWidget {
 }
 
 class _ChatHistoryPageState extends State<ChatHistoryPage> {
-  final List<Map<String, String>> chatData = [
-    {
-      "date": "Today",
-      "summary":
-          "Planning for the summer vacation. Let's discuss the details..."
-    },
-    {
-      "date": "Yesterday",
-      "summary": "Project meeting summary and next steps..."
-    },
-    {
-      "date": "May 4, 2025",
-      "summary": "Weekly team updates and progress report..."
-    },
-    {
-      "date": "May 3, 2025",
-      "summary": "Client feedback on the new design proposal..."
-    },
-    {
-      "date": "May 2, 2025",
-      "summary": "Birthday party planning and guest list..."
-    },
-    {
-      "date": "May 1, 2025",
-      "summary": "Monthly review meeting notes and action items..."
-    },
-  ];
+  late final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchHistory();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   List<HistoryModel> historyList = [];
 
@@ -48,9 +35,28 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     final historyApi = HistoryApi(token);
     final result = await historyApi.getHistory();
+    print("🟢 받은 history 데이터: $result");
     setState(() {
       historyList = result;
     });
+  }
+
+  String formatChatDate(String? rawDate) {
+    if (rawDate == null) return 'No date';
+    try {
+      final parsedDate = DateTime.parse(rawDate);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final target =
+          DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+
+      if (target == today) return 'Today';
+      if (target == yesterday) return 'Yesterday';
+      return DateFormat.yMMMMd().format(parsedDate); // e.g. May 4, 2025
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
 
   @override
@@ -83,35 +89,49 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
             ),
             // Chat List
             Expanded(
-              child: ListView.builder(
-                itemCount: chatData.length,
-                itemBuilder: (context, index) {
-                  final item = chatData[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 6),
-                    child: Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              child: historyList.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No History',
+                        style: TextStyle(
+                            color: AppColors.textSecondary, fontSize: 20),
                       ),
-                      child: ListTile(
-                        title: Text(item['date']!),
-                        subtitle: Text(item['summary']!,
-                            overflow: TextOverflow.ellipsis),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {},
-                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      itemCount: historyList.length,
+                      itemBuilder: (context, index) {
+                        final h = historyList[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 6),
+                          child: Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              title: Text(formatChatDate(h.date)),
+                              subtitle: Text(
+                                  h.summary?.toString() ?? 'No Summary',
+                                  overflow: TextOverflow.ellipsis),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () {},
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Scroll to top or another action
+            _scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOut,
+            );
           },
           backgroundColor: AppColors.primary,
           child: const Icon(
