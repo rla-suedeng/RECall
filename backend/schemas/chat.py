@@ -5,7 +5,7 @@ from datetime import date, datetime
 
 class HistoryBase(BaseModel):
     h_id: int
-    r_id: int
+    summary: str
     date: date
     
 
