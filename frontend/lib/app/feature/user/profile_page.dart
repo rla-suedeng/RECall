@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/api/user_api.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:get_it/get_it.dart';
+import 'package:template/app/state/accessibility_settings.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -53,11 +54,11 @@ class _ProfilePageState extends State<ProfilePage> {
           isLoading = false;
         });
       } else {
-        print("❌ 유저 정보 로딩 실패: \${result.error.message}");
+        print("\u274c 유저 정보 로딩 실패: \${result.error.message}");
         setState(() => isLoading = false);
       }
     } catch (e) {
-      print("❌ 예외 발생: \$e");
+      print("\u274c 예외 발생: \$e");
       setState(() => isLoading = false);
     }
   }
@@ -65,7 +66,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7E6),
+      backgroundColor:
+          AppColors.dynamicBackground(AccessibilitySettings.highContrast.value),
       appBar: const RECallAppBar(
         title: '',
         titleTextStyle: TextStyle(
@@ -170,11 +172,26 @@ class _ProfilePageState extends State<ProfilePage> {
                           Row(children: [
                             IconButton(
                                 icon: const Icon(Icons.remove),
-                                onPressed: () {/* reduce font size */}),
-                            const Text("100%", style: TextStyle(fontSize: 16)),
+                                onPressed: () {
+                                  AccessibilitySettings.textScaleFactor.value =
+                                      (AccessibilitySettings
+                                                  .textScaleFactor.value -
+                                              0.1)
+                                          .clamp(0.8, 2.0);
+                                }),
+                            Text(
+                              "${(AccessibilitySettings.textScaleFactor.value * 100).round()}%",
+                              style: const TextStyle(fontSize: 16),
+                            ),
                             IconButton(
                                 icon: const Icon(Icons.add),
-                                onPressed: () {/* increase font size */}),
+                                onPressed: () {
+                                  AccessibilitySettings.textScaleFactor.value =
+                                      (AccessibilitySettings
+                                                  .textScaleFactor.value +
+                                              0.1)
+                                          .clamp(0.8, 2.0);
+                                }),
                           ]),
                         ],
                       ),
@@ -185,8 +202,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           const Text("High Contrast",
                               style: TextStyle(fontSize: 16)),
                           Switch(
-                              value: false,
-                              onChanged: (val) {/* toggle contrast */}),
+                            value: AccessibilitySettings.highContrast.value,
+                            onChanged: (val) {
+                              AccessibilitySettings.highContrast.value = val;
+                            },
+                          ),
                         ],
                       ),
                     ]),
@@ -248,8 +268,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
-      // Bottom Navigation
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
     );
   }

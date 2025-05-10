@@ -10,4 +10,7 @@ class AppColors {
 
   static const textPrimary = Color(0xFF1F2937);
   static const textSecondary = Color(0xFF2E422A);
+
+  static Color dynamicBackground(bool highContrast) =>
+      highContrast ? Colors.blueGrey : const Color(0xFFFFF7E6);
 }
