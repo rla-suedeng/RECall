@@ -40,7 +40,7 @@ abstract class Routes {
   static const String chat = '/chat';
   static const String addRecord = '/add_record';
   static const String album = '/album';
-  static const String history = '/chat_history';
+  static const String history = '/history';
   static const String profile = '/profile';
   static const String record = '/record';
 }
@@ -102,10 +102,12 @@ class RouterService {
           },
         ),
         GoRoute(
+          name: Routes.history,
           path: Routes.history,
           builder: (context, state) {
-            // var args = state.extra;
-            return ChatHistoryPage();
+            final recIdParam = state.uri.queryParameters['recId'];
+            final recId = recIdParam != null ? int.tryParse(recIdParam) : null;
+            return ChatHistoryPage(recId: recId);
           },
         ),
         GoRoute(

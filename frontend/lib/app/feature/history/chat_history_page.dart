@@ -8,7 +8,8 @@ import 'package:template/app/api/history_api.dart';
 import 'package:intl/intl.dart';
 
 class ChatHistoryPage extends StatefulWidget {
-  const ChatHistoryPage({super.key});
+  final int? recId;
+  const ChatHistoryPage({super.key, this.recId});
 
   @override
   _ChatHistoryPageState createState() => _ChatHistoryPageState();
@@ -34,11 +35,18 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   Future<void> fetchHistory() async {
     final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     final historyApi = HistoryApi(token);
-    final result = await historyApi.getHistory();
-    print("🟢 받은 history 데이터: $result");
-    setState(() {
-      historyList = result;
-    });
+    try {
+      final result = widget.recId != null
+          ? await historyApi
+              .getHistoryByRecId(widget.recId!) // GET /history/{r_id}
+          : await historyApi.getHistory(); // GET /history
+
+      setState(() {
+        historyList = result;
+      });
+    } catch (e) {
+      print('❌ history fetch error: $e');
+    }
   }
 
   String formatChatDate(String? rawDate) {
@@ -74,16 +82,30 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
             // Search Bar
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search by date or message content...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(32),
-                    borderSide: BorderSide.none,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search by date or message content...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(32),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
                 ),
               ),
             ),
