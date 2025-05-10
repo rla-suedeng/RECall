@@ -237,7 +237,7 @@ Notes: ${noteController.text.trim()}''';
               height: 48,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.chat),
-                label: const Text('View Related Chat'),
+                label: const Text('View Related History'),
                 onPressed: () {
                   context.go(Routes.history, extra: {'filter': rec!.category});
                 },
