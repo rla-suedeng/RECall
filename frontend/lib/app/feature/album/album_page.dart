@@ -62,19 +62,38 @@ class _AlbumPageState extends State<AlbumPage> {
           ? selectedCategory?.toLowerCase()
           : null;
       final order = selectedSort == 'Newest First' ? 'desc' : 'asc';
-
+      if (!user.role) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Access Denied'),
+              content: const Text('Only reminders can access memory albums.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // 팝업 닫기
+                    context.go(Routes.home); // 홈으로 이동
+                  },
+                  child: const Text('Go to Home'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
       final recs = await recApi.getRecs(
         category: filteredCategory,
         keyword: keyword,
         order: order,
-      );
-
+      ); // 정상 호출
       setState(() {
         allRecs = recs;
         isLoading = false;
       });
     } catch (e) {
-      print('❌ Error fetching recs: $e');
+      debugPrint("❌ Error fetching recs: $e");
     }
   }
 
@@ -121,109 +140,113 @@ class _AlbumPageState extends State<AlbumPage> {
           const SizedBox(height: 12),
 
           /// 필터 드롭다운 2개
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        )
-                      ],
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedCategory,
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        isExpanded: true,
-                        items: [
-                          'All Categories',
-                          'Family',
-                          'Travel',
-                          'Childhood',
-                          'Special',
-                          'Etc'
-                        ].map((cat) {
-                          return DropdownMenuItem(
-                            value: cat,
-                            child: Row(
-                              children: [
-                                const Icon(Icons.filter_alt,
-                                    size: 18, color: Colors.deepOrange),
-                                const SizedBox(width: 8),
-                                Text(cat),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              selectedCategory = val;
-                              isLoading = true;
-                            });
-                            getRecs();
-                          }
-                        },
+          MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.0)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ],
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedCategory,
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          isExpanded: true,
+                          items: [
+                            'All Categories',
+                            'Family',
+                            'Travel',
+                            'Childhood',
+                            'Special',
+                            'Etc'
+                          ].map((cat) {
+                            return DropdownMenuItem(
+                              value: cat,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.filter_alt,
+                                      size: 18, color: Colors.deepOrange),
+                                  const SizedBox(width: 8),
+                                  Text(cat),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                selectedCategory = val;
+                                isLoading = true;
+                              });
+                              getRecs();
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        )
-                      ],
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedSort,
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        isExpanded: true,
-                        items: ['Newest First', 'Oldest First'].map((sort) {
-                          return DropdownMenuItem(
-                            value: sort,
-                            child: Row(
-                              children: [
-                                const Icon(Icons.calendar_today,
-                                    size: 18, color: Colors.deepOrange),
-                                const SizedBox(width: 8),
-                                Text(sort),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              selectedSort = val;
-                              isLoading = true;
-                            });
-                            getRecs();
-                          }
-                        },
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ],
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedSort,
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          isExpanded: true,
+                          items: ['Newest First', 'Oldest First'].map((sort) {
+                            return DropdownMenuItem(
+                              value: sort,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.calendar_today,
+                                      size: 18, color: Colors.deepOrange),
+                                  const SizedBox(width: 8),
+                                  Text(sort),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                selectedSort = val;
+                                isLoading = true;
+                              });
+                              getRecs();
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 

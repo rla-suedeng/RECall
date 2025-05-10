@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
-import 'package:template/app/api/user_api.dart';
 import 'package:template/app/api/home_api.dart';
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
@@ -9,11 +8,10 @@ import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
-import 'package:template/app/api/rec_api.dart';
 import 'package:template/app/models/rec_model.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'dart:convert'; // ✅ Import dart:convert for JSON handling
+import 'package:template/app/state/accessibility_settings.dart';
 
 String formatMonthYear(String? dateStr) {
   if (dateStr == null) return 'Unknown';
@@ -45,7 +43,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     fetchHomeInfo();
-    user = GetIt.I<UserModel>();
+    final getIt = GetIt.I;
+    if (getIt.isRegistered<UserModel>()) {
+      user = GetIt.I<UserModel>();
+    }
     isLoading = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -308,16 +309,20 @@ class _HomePageState extends State<HomePage> {
               Center(
                 child: isLoading
                     ? const CircularProgressIndicator()
-                    : Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: [
-                          _albumCard('family', Icons.favorite_border),
-                          _albumCard('travel', Icons.card_travel),
-                          _albumCard('childhood', Icons.child_care),
-                          _albumCard('special', Icons.star_border),
-                        ],
+                    : MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaler: const TextScaler.linear(1.0)),
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            _albumCard('family', Icons.favorite_border),
+                            _albumCard('travel', Icons.card_travel),
+                            _albumCard('childhood', Icons.child_care),
+                            _albumCard('special', Icons.star_border),
+                          ],
+                        ),
                       ),
               ),
               const SizedBox(height: 32),
@@ -358,58 +363,65 @@ class _HomePageState extends State<HomePage> {
         : 'Unknown';
     final imageUrl = rec.fileUrl;
 
-    return Container(
-      width: 130,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl ?? '',
-              height: 60,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                height: 80,
-                color: Colors.grey[200],
-              ),
-              errorWidget: (context, url, error) => Container(
+    return MediaQuery(
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: const TextScaler.linear(1.0)),
+      child: Container(
+        width: 130,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl ?? '',
                 height: 60,
-                color: Colors.grey[200],
-                child: const Icon(Icons.broken_image, size: 24),
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 80,
+                  color: Colors.grey[200],
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 60,
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.broken_image, size: 24),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  date,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    date,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -469,37 +481,75 @@ class _HomePageState extends State<HomePage> {
 
   // Accessibility Settings
   Widget _accessibilitySettings() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: const Column(
-        children: [
-          Row(
-            children: [
-              Text('Text Size'),
-              Spacer(),
-              Icon(Icons.remove),
-              SizedBox(width: 8),
-              Text('A'),
-              SizedBox(width: 8),
-              Icon(Icons.add),
-            ],
-          ),
-          Divider(height: 24),
-          Row(
-            children: [
-              Text('High Contrast'),
-              Spacer(),
-              Switch(value: false, onChanged: null),
-            ],
-          )
-        ],
-      ),
+    return ValueListenableBuilder<double>(
+      valueListenable: AccessibilitySettings.textScaleFactor,
+      builder: (context, scale, _) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: AccessibilitySettings.highContrast,
+          builder: (context, highContrast, _) {
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: highContrast ? Colors.black : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Text Size", style: TextStyle(fontSize: 16)),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: () {
+                              final current =
+                                  AccessibilitySettings.textScaleFactor.value;
+                              if (current > 0.8) {
+                                AccessibilitySettings.textScaleFactor.value =
+                                    (current - 0.1).clamp(0.8, 2.0);
+                              }
+                            },
+                          ),
+                          Text("${(scale * 100).round()}%",
+                              style: const TextStyle(fontSize: 16)),
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () {
+                              final current =
+                                  AccessibilitySettings.textScaleFactor.value;
+                              if (current < 2.0) {
+                                AccessibilitySettings.textScaleFactor.value =
+                                    (current + 0.1).clamp(0.8, 2.0);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("High Contrast",
+                          style: TextStyle(fontSize: 16)),
+                      Switch(
+                        value: highContrast,
+                        onChanged: (val) =>
+                            AccessibilitySettings.highContrast.value = val,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
