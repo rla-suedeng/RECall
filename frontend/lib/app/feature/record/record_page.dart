@@ -239,7 +239,10 @@ Notes: ${noteController.text.trim()}''';
                 icon: const Icon(Icons.chat),
                 label: const Text('View Related History'),
                 onPressed: () {
-                  context.go(Routes.history, extra: {'filter': rec!.category});
+                  context.goNamed(
+                    Routes.history,
+                    queryParameters: {'recId': rec!.rId.toString()},
+                  );
                 },
               ),
             ),

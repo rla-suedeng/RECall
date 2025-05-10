@@ -12,23 +12,43 @@ import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class AlbumPage extends StatefulWidget {
-  const AlbumPage({super.key});
+  final String? initialCategory;
+  const AlbumPage({super.key, this.initialCategory = 'All Categories'});
 
   @override
   State<AlbumPage> createState() => _AlbumPageState();
 }
 
 class _AlbumPageState extends State<AlbumPage> {
-  String selectedCategory = 'All Categories';
+  late String? selectedCategory;
   String selectedSort = 'Newest First';
   String keyword = '';
   List<RecModel> allRecs = [];
   bool isLoading = true;
-  //List<RecModel> filteredRecs = [];
+  List<RecModel> filteredRecs = [];
+
+  final List<String> categoryOptions = [
+    'All Categories',
+    'Family',
+    'Travel',
+    'Childhood',
+    'Special',
+    'Etc',
+  ];
+
+  String _capitalize(String str) {
+    if (str.isEmpty) return str;
+    return str[0].toUpperCase() + str.substring(1).toLowerCase();
+  }
 
   @override
   void initState() {
     super.initState();
+    final normalized = _capitalize(widget.initialCategory?.toLowerCase() ?? '');
+
+    selectedCategory =
+        categoryOptions.contains(normalized) ? normalized : 'All Categories';
+
     getRecs();
   }
 
@@ -39,7 +59,7 @@ class _AlbumPageState extends State<AlbumPage> {
       final recApi = RecApi(token);
       final user = GetIt.I<UserModel>();
       final filteredCategory = (selectedCategory != 'All Categories')
-          ? selectedCategory.toLowerCase()
+          ? selectedCategory?.toLowerCase()
           : null;
       final order = selectedSort == 'Newest First' ? 'desc' : 'asc';
 
@@ -56,6 +76,15 @@ class _AlbumPageState extends State<AlbumPage> {
     } catch (e) {
       print('❌ Error fetching recs: $e');
     }
+  }
+
+  Future<void> fetchFilteredRecs() async {
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final recApi = RecApi(token);
+    final result = await recApi.getRecs(category: selectedCategory);
+    setState(() {
+      filteredRecs = result;
+    });
   }
 
   // final List<String> dummyImages = List.generate(
