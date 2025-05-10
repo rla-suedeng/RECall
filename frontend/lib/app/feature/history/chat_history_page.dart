@@ -2,8 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:template/app/theme/colors.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/widgets/app_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:template/app/models/history_model.dart';
+import 'package:template/app/api/history_api.dart';
 
-class ChatHistoryPage extends StatelessWidget {
+class ChatHistoryPage extends StatefulWidget {
+  const ChatHistoryPage({super.key});
+
+  @override
+  _ChatHistoryPageState createState() => _ChatHistoryPageState();
+}
+
+class _ChatHistoryPageState extends State<ChatHistoryPage> {
   final List<Map<String, String>> chatData = [
     {
       "date": "Today",
@@ -32,7 +42,16 @@ class ChatHistoryPage extends StatelessWidget {
     },
   ];
 
-  ChatHistoryPage({super.key});
+  List<HistoryModel> historyList = [];
+
+  Future<void> fetchHistory() async {
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final historyApi = HistoryApi(token);
+    final result = await historyApi.getHistory();
+    setState(() {
+      historyList = result;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
