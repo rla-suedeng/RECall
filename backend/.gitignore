@@ -3,4 +3,4 @@ test/
 firebase/__pycache__/
 firebase/firebase-adminsdk.json
 .env
-api/AI_server/server_python/recall-456905-da85a616abc4.json
+firebase/google.json
