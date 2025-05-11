@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException, Depends
+from fastapi import FastAPI, Header, HTTPException, Depends,WebSocket, WebSocketDisconnect
 from firebase_admin import auth, credentials
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
@@ -30,3 +30,27 @@ async def get_current_user(
     except Exception as e:
         print(f"Firebase 인증 오류: {e}")
         raise HTTPException(status_code=401, detail="토큰 검증 실패")
+    
+
+async def get_current_user_ws(websocket: WebSocket, db: Session = Depends(get_db)) -> User:
+    token = websocket.query_params.get("token")  # 예: /voice-chat?token=Bearer+xxx
+
+    if not token or not token.startswith("Bearer "):
+        await websocket.close(code=1008)
+        raise WebSocketDisconnect(code=1008)
+
+    try:
+        # Firebase 토큰 검증
+        from firebase_admin import auth
+        decoded = auth.verify_id_token(token[7:])
+        uid = decoded["uid"]
+    except Exception:
+        await websocket.close(code=1008)
+        raise WebSocketDisconnect(code=1008)
+
+    user = db.query(User).filter(User.u_id == uid).first()
+    if not user:
+        await websocket.close(code=1008)
+        raise WebSocketDisconnect(code=1008)
+
+    return user

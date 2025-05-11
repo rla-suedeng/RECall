@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+import os 
 
 from database import engine,get_db
 from models import Base,User,Rec,History
@@ -41,6 +42,7 @@ def get_root_summary(
     
     results = (
         db.query(Rec.category, func.count(Rec.r_id))
+        .filter(Rec.u_id == target_uid)
         .group_by(Rec.category)
         .all()
     )
@@ -50,12 +52,18 @@ def get_root_summary(
     for category, count in results:
         category_counts[category] = count
 
-
+    print(repr(os.getenv("GOOGLE_API_KEY")))
     return RootResponse(
         name=full_name,
         recent_memory=memories,
         num_rec = category_counts
     )
+    
+from fastapi.responses import HTMLResponse
+
+@app.get("/ws-test", include_in_schema=False)
+def websocket_test_page():
+    return HTMLResponse(open("websocket.html").read())
 # 라우터 등록
 app.include_router(recs.router)
 app.include_router(histories.router)

@@ -61,3 +61,21 @@ def update_user(
     db.commit()
     db.refresh(user)
     return user
+
+@router.post("/accept")
+def accept_care(
+    email:str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    if user.role==False:
+        raise HTTPException(status_code=401, detail="Unathorization")
+    
+@router.post("/apply")
+def apply_care(
+    email:str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    if user.role==False:
+        raise HTTPException(status_code=401, detail="Unathorization")
