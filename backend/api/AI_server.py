@@ -266,7 +266,7 @@ async def stream(request: str, db: Session,user:User ):
         # ✅ 스트리밍이 끝난 후 DB에 저장
         save_message_to_db(db, h_id=room.h_id, u_id="gemini", content=full_response)
         
-        audio_bytes = tts(full_response)
+        audio_bytes = await tts(full_response)
         audio_base64 = base64.b64encode(audio_bytes).decode()
 
         # ✅ 음성도 마지막에 함께 전송 (base64)
