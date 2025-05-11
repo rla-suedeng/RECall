@@ -8,7 +8,7 @@ from database import get_db
 from schemas.chat import (HistoryBase,ChatBase,ChatGet)
 from firebase.firebase_user import get_current_user,get_current_user_ws
 from models import Rec, User,History,Chat
-from api.AI_server.server_python.main import stt,tts,stream,chat
+from api.AI_server import stt,tts,stream,chat
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
