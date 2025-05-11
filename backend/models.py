@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime,Date,Boolean,Fore
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy.dialects.postgresql import UUID
-
+from datetime import date,datetime
 import uuid
 
 import enum
@@ -56,7 +56,7 @@ class History(Base):
     h_id = Column(Integer, primary_key=True,autoincrement=True)
     u_id =Column(String(64), ForeignKey('users.u_id'),nullable=False)
     r_id =  Column(Integer,ForeignKey('rec.r_id'), nullable=False)
-    date = Column(Date, nullable=True)
+    date = Column(Date,  default=date.today)
     summary =  Column(Text, nullable=True)
     
     user = relationship("User", back_populates="histories")
@@ -71,7 +71,7 @@ class Chat(Base):
     h_id = Column(Integer, ForeignKey('history.h_id'), nullable=False)
     u_id = Column(String(64),ForeignKey('users.u_id'))
     content = Column(Text, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(DateTime,default=datetime.utcnow,nullable=False)
     
     histories = relationship("History", back_populates="chats")
     user = relationship("User", back_populates="chats")
