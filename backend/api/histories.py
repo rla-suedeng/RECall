@@ -16,10 +16,11 @@ def get_histories(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user) 
 ):
-    if user.role == True:
-        histories = db.query(History).filter(History.u_id == user.u_id).order_by(History.date.desc()).all()
-    else : 
-       histories = db.query(History).filter(History.u_id == user.p_id).order_by(History.date.desc()).all()
+    target_uid = user.u_id if user.role else user.p_id
+    if not target_uid:
+        raise HTTPException(status_code=400, detail="유효한 사용자 또는 보호자 없음")
+
+    histories = db.query(History).filter(History.u_id == target_uid).order_by(History.date.desc()).all()
     return histories
 
 @router.get("/{rec_id}", response_model=List[HistoryBase])
@@ -28,10 +29,11 @@ def get_rec_histories(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user) 
 ):
-    users = db.query(User).filter(User.u_id == user.u_id).first()
-    if users.role == True:
-        histories = db.query(History).filter(History.r_id == rec_id,History.u_id == user.u_id).order_by(History.date.desc()).all()
-    else : 
-       histories = db.query(History).filter(History.r_id == rec_id,History.u_id == user.p_id).order_by(History.date.desc()).all()
+    target_uid = user.u_id if user.role else user.p_id
+    if not target_uid:
+        raise HTTPException(status_code=400, detail="유효한 사용자 또는 보호자 없음")
+
+    histories = db.query(History).filter(History.r_id == rec_id,History.u_id == target_uid).order_by(History.date.desc()).all()
+
     return histories
 

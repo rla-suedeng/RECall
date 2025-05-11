@@ -92,7 +92,7 @@ def get_or_create_active_chatroom(db: Session, user_id : int):
         print(repr(room.summary))  # 공백, \n, \t 확인
         return room
     
-    recs = db.query(Rec).filter(Rec.u_id == user_id).all()  # 또는 Rec.p_id == user_id 등 구조에 따라
+    recs = db.query(Rec).filter(Rec.u_id == user_id).all()  
     # if not recs:
     #     raise HTTPException(status_code=404, detail="No Rec found for user")
 
