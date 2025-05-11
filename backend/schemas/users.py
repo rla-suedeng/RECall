@@ -19,8 +19,6 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     pass
 
-class UserGet(UserBase):
-    u_id: str
 
 class UserUpdate(BaseModel):
     f_name: Optional[str]
@@ -33,6 +31,13 @@ class MemorySummary(BaseModel):
     file: str
     r_date: Optional[date]=None
     title: str
+
+class ApplyReq(BaseModel):
+    email : EmailStr
+    
+class ApplyBase(BaseModel):
+    u_id :str
+    u_name :str
 
 class RootResponse(BaseModel):
     name: str

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime,Date,Boolean,ForeignKey,Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime,Date,Boolean,ForeignKey,Enum,PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy.dialects.postgresql import UUID
@@ -24,7 +24,21 @@ class User(Base):
     recs = relationship("Rec", back_populates="user", cascade="all, delete", foreign_keys="Rec.u_id")
     authored_recs = relationship("Rec", back_populates="author", foreign_keys="Rec.author_id")
     histories = relationship("History", back_populates="user",cascade="all, delete")
-    chats = relationship("Chat", back_populates="user", cascade="all, delete") 
+    chats = relationship("Chat", back_populates="user", cascade="all, delete")
+    apply = relationship("Apply",back_populates = "users", cascade ="all,delete",foreign_keys = "Apply.u_id")
+    apply_patient = relationship("Apply",back_populates = "patients", cascade ="all,delete",foreign_keys = "Apply.p_id")
+    
+class Apply(Base):
+    __tablename__ = "apply"
+    u_id = Column(String(64), ForeignKey('users.u_id'), nullable=True)
+    p_id = Column(String(64), ForeignKey('users.u_id'), nullable=True)
+    
+    __table_args__ = (
+        PrimaryKeyConstraint('u_id', 'p_id'),
+    )
+
+    users =  relationship("User",back_populates ="apply",foreign_keys=[u_id])
+    patients = relationship("User", back_populates ="apply_patient",foreign_keys=[p_id])
 
 class CategoryEnum(str, enum.Enum):
     childhood = "childhood"
