@@ -46,7 +46,7 @@ async def voice_chat_websocket(
     ):
     await websocket.accept()
     audio_bytes = await websocket.receive_bytes()
-    text_output = stt(audio_bytes)
+    text_output = await stt(audio_bytes)
     result = await stream(text_output,db,user)
     
     return result
