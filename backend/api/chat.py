@@ -1,14 +1,13 @@
 from fastapi import FastAPI, HTTPException, Depends,APIRouter,Request,Body,WebSocket, WebSocketDisconnect,Form, File, UploadFile
-from typing import Annotated,List,Optional
+from typing import List,Optional
 from sqlalchemy.orm import Session
-from enum import Enum
-from datetime import date, datetime
+
 
 from database import get_db
-from schemas.chat import (HistoryBase,ChatBase,ChatGet)
+from schemas.chat import (ChatBase,ChatGet)
 from firebase.firebase_user import get_current_user,get_current_auth_user
 from models import Rec, User,History,Chat
-from api.AI_server import stt,tts,stream,chat,enter_chat,send_messages
+from api.AI_server import stt,tts,enter_chat,send_messages
 from firebase.firebase_user import AuthenticatedUser
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -48,38 +47,7 @@ async def message(
     result = await send_messages(h_id, text_output, db, user)
     return result
 
-@router.post("/")
-async def post_rec(
-   
-    file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-    ):
-    
-    text_output = await stt(file)
-    result = await chat(text_output,db,user)
-    return result
 
-# @router.websocket("/voice-chat")
-# async def voice_chat_websocket(
-#     websocket: WebSocket,
-#     db: Session = Depends(get_db),
-#     user: User = Depends(get_current_user_ws)
-#     ):
-#     await websocket.accept()
-#     audio_bytes = await websocket.receive_bytes()
-#     text_output = await stt(audio_bytes)
-#     result = await stream(text_output,db,user)
-    
-#     return result
 
-# @router.post("/stream")
-# async def post_stream(
-#     request: Optional[str] = Body(default=None),
-#     db: Session = Depends(get_db),
-#     user: User = Depends(get_current_user_ws)
-#     ):
-#     result = await stream(request,db,user)
-#     return result
 
 

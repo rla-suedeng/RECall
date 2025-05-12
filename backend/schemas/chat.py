@@ -10,7 +10,7 @@ class HistoryBase(BaseModel):
     
 
 class ChatBase(BaseModel): 
-    u_id: str  # "user" 또는 "gemini"
+    u_id: str  
     content: str
    
     
