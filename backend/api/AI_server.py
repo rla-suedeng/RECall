@@ -158,7 +158,11 @@ async def chat(request: str, db: Session,user:User ):
     if SYSTEM_PROMPT:
         history_list.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
 
-    
+    if chat_text.strip() == "[Voice recognition failed. Please try again.]":
+        return StreamingResponse(
+            iter(["Sorry, I couldn't understand your voice. Please try again."]),
+            media_type="text/event-stream"
+        )
     # Prompt
     if  chat_text==None:
         chat_text = """
@@ -178,12 +182,13 @@ async def chat(request: str, db: Session,user:User ):
         """
     else : 
         save_message_to_db(db, h_id=room.h_id, u_id=user.u_id, content=chat_text)
-        print(1)
         if "goodbye" in chat_text:
             room.summary = summarize(db,h_id=room.h_id)
             db.commit()
-            return {"text": "Chat closed"}
-    print(chat_text)
+            return {"text": "Wishing you a peaceful and joyful day. I'm here anytime you want to talk."
+
+}
+
     # Build content for Gemini: either text or [text, image]
 
     recs = db.query(Rec).filter(Rec.r_id == room.r_id).first()
@@ -219,6 +224,12 @@ async def stream(request: str, db: Session,user:User ):
 
     if SYSTEM_PROMPT:
         history_list.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
+
+    if chat_text.strip() == "[Voice recognition failed. Please try again.]":
+        return StreamingResponse(
+            iter(["Sorry, I couldn't understand your voice. Please try again."]),
+            media_type="text/event-stream"
+        )
 
    
     # Prompt
@@ -321,9 +332,13 @@ async def stt(content: bytes)-> str:
         enable_automatic_punctuation=True
     )
 
-    response = client.recognize(config=config, audio=audio)
-        
-    transcript = response.results[0].alternatives[0].transcript
-    return transcript
+    try:
+        response = client.recognize(config=config, audio=audio)
+        transcript = response.results[0].alternatives[0].transcript
+        return transcript
+
+    except Exception as e:
+        print("❌ STT 오류:", e)
+        return "[Voice recognition failed. Please try again.]"
 
 

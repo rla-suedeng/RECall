@@ -124,7 +124,7 @@ def apply_patient(
     db.refresh(apply)
     return {"message": "apply"}
 
-@router.get("/user/apply/list", response_model=List[ApplyBase])
+@router.get("/apply/list", response_model=List[ApplyBase])
 def get_applications_by_guardian(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
@@ -157,3 +157,17 @@ def reject_application(
     db.delete(apply)
     db.commit()
     return {"message": "reject"}
+
+@router.get("/apply/patient",response_model=ApplyBase) 
+def apply_accpet(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)   
+):   
+    if user.p_id==None:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    else:
+        full_name = f"{user.patient.f_name} {user.patient.l_name}"
+    if user.role==True:
+        raise HTTPException(status_code=401, detail="Unathorization")
+    
+    return ApplyBase(u_id=user.p_id, u_name=full_name)
