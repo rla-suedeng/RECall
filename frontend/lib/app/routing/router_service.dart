@@ -13,6 +13,7 @@ import 'package:template/app/feature/history/chat_history_page.dart';
 import 'package:template/app/feature/user/profile_page.dart';
 import 'package:template/app/feature/record/record_page.dart';
 import 'package:template/app/models/rec_model.dart';
+import 'package:template/app/feature/apply/received_apply_page.dart';
 
 extension GoRouterX on GoRouter {
   BuildContext? get context => configuration.navigatorKey.currentContext;
@@ -43,6 +44,7 @@ abstract class Routes {
   static const String history = '/history';
   static const String profile = '/profile';
   static const String record = '/record';
+  static const String apply = '/apply';
 }
 
 class RouterService {
@@ -129,6 +131,11 @@ class RouterService {
                 : const MaterialPage(child: ErrorPage()); // 예외 처리
           },
         ),
+        GoRoute(
+            path: Routes.apply,
+            pageBuilder: (context, state) {
+              return const MaterialPage(child: ReceivedApplicationsPage());
+            }),
       ], // TODO: Add routes
 
       errorBuilder: (context, state) {

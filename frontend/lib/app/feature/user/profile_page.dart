@@ -5,8 +5,11 @@ import 'package:template/app/widgets/app_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/api/user_api.dart';
 import 'package:template/app/models/user_model.dart';
+import 'package:template/app/models/apply_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:template/app/state/accessibility_settings.dart';
+import 'package:template/app/routing/router_service.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -33,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   UserModel? user;
   bool isLoading = true;
   int? age;
+  ApplyModel? linkedPatient;
 
   @override
   void initState() {
@@ -56,6 +60,12 @@ class _ProfilePageState extends State<ProfilePage> {
       } else {
         print("\u274c 유저 정보 로딩 실패: \${result.error.message}");
         setState(() => isLoading = false);
+      }
+      if (!user!.role) {
+        final patient = await userApi.getLinkedPatient(token);
+        setState(() {
+          linkedPatient = patient;
+        });
       }
     } catch (e) {
       print("\u274c 예외 발생: \$e");
@@ -211,8 +221,28 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ]),
                   ),
+                  if (!user!.role && linkedPatient != null) ...[
+                    const SizedBox(height: 24),
+                    const Text("Linked Patient",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.person, color: Colors.grey),
+                          const SizedBox(width: 12),
+                          Text(linkedPatient!.uName),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
-
                   // Support
                   const Text("Support",
                       style:
@@ -250,7 +280,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   // Logout
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                        // 로그아웃 후 라우팅 (예: 로그인 화면으로)
+                        context
+                            .go(Routes.login); // 또는 Navigator.pushReplacement 등
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepOrangeAccent,
                         minimumSize: const Size(double.infinity, 48),

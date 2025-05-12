@@ -46,7 +46,10 @@ class RECallAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications_none),
-          onPressed: onNotificationsPressed ?? () {},
+          onPressed: onNotificationsPressed ??
+              () {
+                context.go(Routes.apply);
+              },
         ),
         IconButton(
           icon: const Icon(Icons.settings_outlined),
