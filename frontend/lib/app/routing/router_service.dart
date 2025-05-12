@@ -88,9 +88,9 @@ class RouterService {
           },
         ),
         GoRoute(
+          name: Routes.chat,
           path: Routes.chat,
           builder: (context, state) {
-            // var args = state.extra;
             return const ChatPage();
           },
         ),

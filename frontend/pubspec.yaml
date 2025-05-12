@@ -34,6 +34,11 @@ dependencies:
   lottie: ^2.7.0
   http: ^1.0.0
   cached_network_image: ^3.3.0
+  web_socket_channel: ^2.4.0
+
+  flutter_sound: ^9.2.13
+  permission_handler: ^11.3.0
+  audioplayers: ^5.2.1
 
 dev_dependencies:
   flutter_test:

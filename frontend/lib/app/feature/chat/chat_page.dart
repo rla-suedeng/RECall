@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:go_router/go_router.dart';
+import 'package:template/app/api/chat_api.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
+import 'package:template/app/models/chat_model.dart';
+import 'package:template/app/service/audio_service.dart';
+import 'package:template/app/service/chat_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:typed_data';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -13,55 +20,94 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage>
     with SingleTickerProviderStateMixin {
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'isUser': false,
-      'text':
-          "Hello Mary! It's wonderful to chat with you today. Would you like to tell me about your favorite childhood memory?",
-      'time': "2:45 PM"
-    },
-    {
-      'isUser': true,
-      'text':
-          "I remember going to the beach with my family when I was young. We used to build sandcastles together.",
-      'time': "2:46 PM"
-    },
-    {
-      'isUser': false,
-      'text':
-          "That sounds like a wonderful memory, Mary! Can you tell me more about those beach trips? What was your favorite part?",
-      'time': "2:47 PM"
-    },
-  ];
-
+  final List<ChatModel> _messages = [];
   late final String _randomImageUrl;
   AnimationController? _controller;
   Animation<double>? _fadeAnimation;
+  late final AudioService _audioService;
+  late final ChatService _chatService;
+  final ScrollController _scrollController = ScrollController();
+
+  String recordingStatus = '🎤 Ready to record...'; // 상태 텍스트
 
   @override
   void initState() {
     super.initState();
-
     _randomImageUrl = 'https://picsum.photos/400/200';
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-
     _fadeAnimation = CurvedAnimation(
       parent: _controller!,
       curve: Curves.easeIn,
     );
-
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) _controller?.forward();
     });
+
+    _audioService = AudioService();
+    _chatService = ChatService();
+    _audioService.requestMicPermission();
+    _startVoiceChat();
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  Future<void> playTTS(ChatModel message) async {
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (token == null) return;
+
+    final chatApi = ChatApi(token);
+    final ttsBytes = await chatApi.sendTTSRequest(message.content);
+
+    final player = AudioPlayer();
+    await player.play(BytesSource(Uint8List.fromList(ttsBytes)));
+  }
+
+  Future<void> _startVoiceChat() async {
+    try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token == null) throw Exception("No token");
+
+      setState(() => recordingStatus = '🎙️ Recording...');
+      await _audioService.startRecording();
+      await Future.delayed(const Duration(seconds: 5));
+      final audioBytes = await _audioService.stopRecordingAndGetBytes();
+      setState(() => recordingStatus = '🔊 Sending to server...');
+
+      _chatService.connect(token);
+      _chatService.sendAudio(Uint8List.fromList(audioBytes));
+
+      _chatService.listen((reply) {
+        setState(() {
+          _messages.add(ChatModel(
+            uId: 'gemini',
+            content: reply,
+            timestamp: DateTime.now(),
+          ));
+          recordingStatus = '✅ Received reply!';
+        });
+      });
+    } catch (e, stack) {
+      print("❌ Voice chat error: $e");
+      print("🔍 Stack trace: $stack");
+      setState(() => recordingStatus = '❌ Error during voice chat');
+    }
   }
 
   @override
   void dispose() {
     _controller?.dispose();
+    _audioService.dispose();
+    _chatService.close();
     super.dispose();
   }
 
@@ -82,59 +128,53 @@ class _ChatPageState extends State<ChatPage>
       ),
       body: Column(
         children: [
-          // 상단 이미지 (회상 이미지)
           if (_fadeAnimation != null)
             FadeTransition(
               opacity: _fadeAnimation!,
               child: Image.network(
-                'https://picsum.photos/400/200',
+                _randomImageUrl,
                 height: MediaQuery.of(context).size.height * 0.3,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: MediaQuery.of(context).size.height * 0.3,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: Icon(Icons.broken_image, size: 60),
-                    ),
-                  );
-                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  color: Colors.grey[300],
+                  child:
+                      const Center(child: Icon(Icons.broken_image, size: 60)),
+                ),
               ),
             ),
-
-          // 애니메이션 + Listening 텍스트
           Column(
             children: [
-              Lottie.asset(
-                'assets/listening-wave.json',
-                height: 60,
-              ),
+              Lottie.asset('assets/listening-wave.json', height: 60),
               const SizedBox(height: 4),
-              const Text(
-                'Listening to your memory...',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                recordingStatus,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey,
+                ),
               ),
               const SizedBox(height: 12),
             ],
           ),
-
           const Divider(height: 1),
-
-          // 채팅 메시지 영역
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final message = _messages[index];
+                final isUser = message.uId == 'user';
                 return Column(
-                  crossAxisAlignment: message['isUser']
+                  crossAxisAlignment: isUser
                       ? CrossAxisAlignment.end
                       : CrossAxisAlignment.start,
                   children: [
                     Text(
-                      message['time'],
+                      TimeOfDay.fromDateTime(message.timestamp).format(context),
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
@@ -143,16 +183,14 @@ class _ChatPageState extends State<ChatPage>
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       constraints: const BoxConstraints(maxWidth: 250),
                       decoration: BoxDecoration(
-                        color: message['isUser']
-                            ? Colors.deepOrangeAccent
-                            : Colors.amber[50],
+                        color:
+                            isUser ? Colors.deepOrangeAccent : Colors.amber[50],
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        message['text'],
+                        message.content,
                         style: TextStyle(
-                          color:
-                              message['isUser'] ? Colors.white : Colors.black87,
+                          color: isUser ? Colors.white : Colors.black87,
                         ),
                       ),
                     ),

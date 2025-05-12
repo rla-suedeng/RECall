@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:template/app/api/chat_api.dart';
 import 'package:template/app/api/home_api.dart';
 import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
@@ -160,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                     icon: const Icon(Icons.mic, color: Colors.white),
                     label: const Text('Talk to Me',
                         style: TextStyle(color: Colors.white)),
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context);
                       context.go(Routes.chat);
                     },
