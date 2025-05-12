@@ -216,11 +216,10 @@ class _AddRecordPageState extends State<AddRecordPage> {
                     final formattedDate = dateController.text.isNotEmpty
                         ? dateController.text
                         : DateFormat('yyyy-MM-dd').format(DateTime.now());
-                    final content = '''
-                                  Where: ${whereController.text}
-                                  With Whom: ${withWhomController.text}
-                                  What Happened: ${whatController.text}
-                                  Notes: ${descriptionController.text}''';
+                    final content = 'Where: ${whereController.text}\n'
+                        'With Whom: ${withWhomController.text}\n'
+                        'What Happened: ${whatController.text}\n'
+                        'Notes: ${descriptionController.text}';
                     final rec = RecModel(
                       uId: userId,
                       title: titleController.text.trim(),

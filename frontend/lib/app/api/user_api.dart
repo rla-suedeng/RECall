@@ -74,7 +74,7 @@ class UserApi {
   /// 보호자가 신청한 환자 목록 조회
   Future<List<ApplyModel>> getAppliedPatients(String idToken) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/user/apply/list'),
+      Uri.parse('$baseUrl/apply/list'),
       headers: {
         'Authorization': 'Bearer $idToken',
       },

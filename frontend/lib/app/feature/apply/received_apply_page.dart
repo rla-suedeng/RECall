@@ -30,7 +30,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
 
   Future<void> _loadApplications() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 2000));
+      // await Future.delayed(const Duration(milliseconds: 2000));
       final idToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
       if (idToken == null) throw Exception('No ID Token');
 
