@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, UploadFile, File, Form,Depends
+from fastapi import FastAPI, Request, UploadFile, File, Form,Depends,HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from typing import List, Any, Union
 from sqlalchemy.orm import Session
 import google.generativeai as genai
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
 import io
@@ -20,11 +21,17 @@ import random
 import requests
 from sqlalchemy import not_
 import base64
+from firebase.firebase_user import AuthenticatedUser
 # Load environment variables and configure API key
 load_dotenv()
 my_api_key=os.getenv("GOOGLE_API_KEY").strip()
 genai.configure(api_key=my_api_key)
+import os
+from dotenv import load_dotenv
 
+# .env 경로를 명시적으로 설정
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(dotenv_path=env_path)
 
 SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
@@ -37,12 +44,12 @@ SYSTEM_PROMPT = os.getenv(
     """
 )
 
-basic_info = {
-    "WHEN": "Last year, Grandma's birthday",
-    "WHO": "Our family", 
-    "WHERE": "Spa in Japan", 
-    "WHAT": "We had a great time and relaxed in the spa"
-}
+# basic_info = {
+#     "WHEN": "Last year, Grandma's birthday",
+#     "WHO": "Our family", 
+#     "WHERE": "Spa in Japan", 
+#     "WHAT": "We had a great time and relaxed in the spa"
+# }
 
 # Initialize the Gemini model (multimodal)
 model = genai.GenerativeModel(model_name="gemini-2.0-flash")
@@ -68,7 +75,18 @@ model = genai.GenerativeModel(model_name="gemini-2.0-flash")
     # return clean_history
 
 
-def fetch_history_from_db(db: Session, h_id: int, limit: int = 20) -> List[dict]:
+def _sanitize_history(raw_history: Any) -> List[dict]:
+    clean = []
+    for msg in raw_history or []:
+        parts = []
+        for part in msg.get("parts", []):
+            if "text" in part:
+                parts.append({"text": part["text"]})
+        if parts:
+            clean.append({"role": msg.get("role", "user"), "parts": parts})
+    return clean
+
+def chat_history_from_db(db: Session, h_id: int, limit: int = 20) -> List[dict]:
     messages = (
         db.query(Chat)
         .filter(Chat.h_id == h_id)
@@ -82,7 +100,7 @@ def fetch_history_from_db(db: Session, h_id: int, limit: int = 20) -> List[dict]
         if msg.content:
             clean_history.append({
                 "role": "model" if msg.u_id=="gemini" else "user",
-                "parts": [{"text": msg.content}]
+                "parts":[{"text": msg.content}]
             })
     return clean_history
 
@@ -90,7 +108,7 @@ def get_or_create_active_chatroom(db: Session, user_id : int):
     room = db.query(History).filter(History.summary.is_(None)).first()
     if room:
         print(repr(room.summary))  # 공백, \n, \t 확인
-        return room
+        return room,False
     
     recs = db.query(Rec).filter(Rec.u_id == user_id).all()  
     # if not recs:
@@ -103,7 +121,7 @@ def get_or_create_active_chatroom(db: Session, user_id : int):
     db.add(new_room)
     db.commit()
     db.refresh(new_room)
-    return new_room
+    return new_room,True
 
 def save_message_to_db(db: Session, h_id: int, u_id: str, content: str):
     msg = Chat(h_id=h_id, u_id=u_id, content=content)
@@ -111,25 +129,10 @@ def save_message_to_db(db: Session, h_id: int, u_id: str, content: str):
     db.commit()
     
 async def summarize(db: Session,h_id:int):
-    raw_text = '''
-        Gemini: That's a lovely photo of your family enjoying a foot spa. It looks like a very relaxing place in Japan with everyone having their feet in the warm water. What comes to mind when you see this picture of your birthday trip?
-
-        User: I remember that place. It was in Tokyo, and I enjoyed Japanese food.
-
-        Gemini: Tokyo, wonderful! I've heard the food there is amazing. What kind of Japanese food did you enjoy most on that trip?
-
-        User: I loved salmon sushi. It was so fresh and delicious.
-
-        Gemini: Salmon sushi, a classic! It's amazing how different it can taste depending on where you are. Thinking back to that meal, what else do you remember about that day? Was there anything else special that happened or anyone special you were with?
-
-        User: My daughter gave me a sweater as a birthday gift. I still love to wear that sweater.
-
-        Gemini: That's so heartwarming! A gift that you still cherish. Tell me more about that sweater. What does it look like, and what makes it so special to you?
-
-        User: It's red and warm sweater. I love to wear that in Christmas.
-
-        Gemini: A red, warm sweater for Christmas sounds perfect! That sounds like it brings back many memories. What makes wearing that sweater at Christmas so special for you? Is there a particular Christmas memory connected to it?
-    '''
+    history_list = chat_history_from_db(db, h_id=h_id)
+    raw_text=""
+    for history in history_list:
+        raw_text+=f"{history["role"]}:{history["parts"][0]["text"]}"
 
     instruction = "Following is the converation between Gemini and User. Summarize the conversation around the user in only one short sentence, less than 15 words. \nConversation: "
     instruction += raw_text
@@ -150,10 +153,9 @@ async def chat(request: str, db: Session,user:User ):
 
     # form = await request.json()
     # chat_text = form.get("chat", "") or ""
-    chat_text = request
     # Clean up history to remove unsupported image parts
-    room = get_or_create_active_chatroom(db, user_id=user.u_id)
-    history_list =  fetch_history_from_db(db, h_id=room.h_id)
+    room,is_new = get_or_create_active_chatroom(db, user_id=user.u_id)
+    history_list =  chat_history_from_db(db, h_id=room.h_id)
 
     if SYSTEM_PROMPT:
         history_list.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
@@ -164,15 +166,15 @@ async def chat(request: str, db: Session,user:User ):
             media_type="text/event-stream"
         )
     # Prompt
-    if  chat_text==None:
+    if  is_new:
         chat_text = """
             1. You are talking to an elderly person. You are therapist, trying to engage the elderly into talking. 
             2. The photo is related to the elderly person's memory. 
             3. The following is a information about the photo written by the elderly person's caregiver.
         """
 
-        for key, value in basic_info.items():
-            chat_text += f'{key}: {value}\n'
+
+        chat_text += room.rec.content
         
         chat_text += """
             4. Briefly describe the photo focusing on people, places, and activities in 1~3 sentences. 
@@ -181,18 +183,27 @@ async def chat(request: str, db: Session,user:User ):
             6. Don't answer to me. Only do what I asked. 
         """
     else : 
+        if not request:
+            raise HTTPException(status_code=400, detail="Message required for existing chat")
+        chat_text = request
         save_message_to_db(db, h_id=room.h_id, u_id=user.u_id, content=chat_text)
-        if "goodbye" in chat_text:
+        if "goodbye" in chat_text.lower():
             room.summary = summarize(db,h_id=room.h_id)
             db.commit()
-            return {"text": "Wishing you a peaceful and joyful day. I'm here anytime you want to talk."
+            end_text = "Wishing you a peaceful and joyful day. I'm here anytime you want to talk."
+            audio_bytes = await tts(end_text)
+            audio_base64 = base64.b64encode(audio_bytes).decode()
 
-}
+            return JSONResponse(content={
+                "text": end_text,
+                "audio_base64": audio_base64
+            })
 
     # Build content for Gemini: either text or [text, image]
-
     recs = db.query(Rec).filter(Rec.r_id == room.r_id).first()
     
+    if not recs:
+        raise HTTPException(status_code=404, detail="Record not found")
     # bucket = storage.bucket()
     # blob = bucket.blob(recs.file)
     # image_bytes = blob.download_as_bytes()
@@ -209,9 +220,122 @@ async def chat(request: str, db: Session,user:User ):
     session = model.start_chat(history=history_list)
     response = session.send_message(content)
     save_message_to_db(db, h_id=room.h_id, u_id="gemini", content=response.text)
-    return {"text": response.text}
+    
+    audio_bytes = await tts(response.text)
+    audio_base64 = base64.b64encode(audio_bytes).decode()
 
+    return JSONResponse(content={
+        "text": response.text,
+        "audio_base64": audio_base64
+    })
+    
+async def enter_chat(db:Session, auth_user: AuthenticatedUser):
+    user = auth_user.user
+    token = auth_user.token
+    
+    room, is_new = get_or_create_active_chatroom(db, user_id=user.u_id)
+    print(room)
+    rec = db.query(Rec).filter_by(r_id=room.r_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="No rec assigned to chatroom.")
 
+    history = chat_history_from_db(db, h_id=room.h_id)
+
+    gemini_text = None
+    audio_base64 = None
+    print("진짜찐자:",is_new)
+    if is_new:
+        # ✅ 초기 프롬프트 생성
+        prompt = """
+            1. You are talking to an elderly person. You are therapist, trying to engage the elderly into talking. 
+            2. The photo is related to the elderly person's memory. 
+            3. The following is a information about the photo written by the elderly person's caregiver.
+        """ +rec.content + """
+            4. Briefly describe the photo focusing on people, places, and activities in 1~3 sentences. 
+            5. Ask a gentle, open-ended question to encourage the user to share memories about this moment. 
+            6. Keep in mind the information about the photo written by the elderly person's caregiver. You may ask a question related to it. 
+            6. Don't answer to me. Only do what I asked.
+        """
+
+        # 히스토리 준비
+        # if SYSTEM_PROMPT:
+        #     history.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
+        print("주소주소",room.rec.file)
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.get(room.rec.file, headers=headers)
+        image = Image.open(BytesIO(response.content))
+        content: Union[str, List[Any]] = [prompt, image]
+        
+        session = model.start_chat(history=history)
+        response = session.send_message(content)
+
+        gemini_text = response.text
+        save_message_to_db(db, h_id=room.h_id, u_id="gemini", content=gemini_text)
+
+        audio_bytes = await tts(gemini_text)
+        audio_base64 = base64.b64encode(audio_bytes).decode()
+
+        
+    return {
+        "h_id": room.h_id,
+        "is_new": is_new,
+        "rec_file": rec.file,
+        "history": chat_history_from_db(db,h_id=room.h_id),
+        "initial_text": gemini_text,
+        "audio_base64": audio_base64
+    }
+
+async def send_messages(
+    h_id:int,
+    text: str,
+    db: Session,
+    auth_user: AuthenticatedUser
+):
+    user = auth_user.user
+    token = auth_user.token
+    
+    # 예: Firebase Storage 접근
+    
+    if text.strip() == "[Voice recognition failed. Please try again.]":
+        reply = "Sorry, I couldn't understand your voice. Please try again."
+        audio = await tts(reply)
+        return {
+            "text": reply,
+            "audio_base64": base64.b64encode(audio).decode(),
+        }
+
+    save_message_to_db(db, h_id=h_id, u_id=user.u_id, content=text)
+    room = db.query(History).filter(History.h_id==h_id).first()
+    if "goodbye" in text.lower():
+            room.summary = await summarize(db,h_id=room.h_id)
+            db.commit()
+            end_text = "Wishing you a peaceful and joyful day. I'm here anytime you want to talk."
+            audio = await tts(end_text)
+            return {
+                "text": end_text,
+                "audio_base64": base64.b64encode(audio).decode()
+            }
+    history_list =  chat_history_from_db(db, h_id=h_id)
+    
+    if SYSTEM_PROMPT:
+        history_list.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
+    headers = {"Authorization": f"Bearer {token}"}
+    response = requests.get(room.rec.file, headers=headers)
+    print(room.rec.file)
+    image = Image.open(BytesIO(response.content))
+    content: Union[str, List[Any]] = [text, image]
+    
+    session = model.start_chat(history=history_list)
+    response = session.send_message(content)
+    
+    reply = response.text
+    save_message_to_db(db, h_id=h_id, u_id="gemini", content=reply)
+    audio = await tts(reply)
+    
+    return {
+        "text": reply,
+        "audio_base64": base64.b64encode(audio).decode(),
+    }
 # @app.post("/stream")
 async def stream(request: str, db: Session,user:User ):
     """
@@ -220,7 +344,7 @@ async def stream(request: str, db: Session,user:User ):
     chat_text = request
     # Clean up history to remove unsupported image parts
     room = get_or_create_active_chatroom(db, user_id=user.u_id)
-    history_list =  fetch_history_from_db(db, h_id=room.h_id)
+    history_list =  chat_history_from_db(db, h_id=room.h_id)
 
     if SYSTEM_PROMPT:
         history_list.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})

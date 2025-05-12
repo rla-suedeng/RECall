@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends,APIRouter,Request,Body,WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Depends,APIRouter,Request,Body,WebSocket, WebSocketDisconnect,Form, File, UploadFile
 from typing import Annotated,List,Optional
 from sqlalchemy.orm import Session
 from enum import Enum
@@ -6,10 +6,10 @@ from datetime import date, datetime
 
 from database import get_db
 from schemas.chat import (HistoryBase,ChatBase,ChatGet)
-from firebase.firebase_user import get_current_user,get_current_user_ws
+from firebase.firebase_user import get_current_user,get_current_auth_user
 from models import Rec, User,History,Chat
-from api.AI_server import stt,tts,stream,chat
-
+from api.AI_server import stt,tts,stream,chat,enter_chat,send_messages
+from firebase.firebase_user import AuthenticatedUser
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
@@ -28,42 +28,58 @@ def get_chat_list(
     chats = db.query(Chat).filter(Chat.h_id == history_id).order_by(Chat.timestamp).all()
     return chats
 
+@router.post("/enter")
+async def chatroom(
+    db: Session = Depends(get_db),
+    auth_user: AuthenticatedUser = Depends(get_current_auth_user)
+):
+    result = await enter_chat(db,auth_user)
+    return result
+
+@router.post("/{h_id}/message")
+async def message(
+    h_id :int,
+    file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_auth_user)    
+):
+    content = await file.read()
+    text_output = await stt(content)
+    result = await send_messages(h_id, text_output, db, user)
+    return result
+
 @router.post("/")
 async def post_rec(
-    request: Optional[str] = Body(default=None),
+   
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
     ):
     
-    result = await chat(request,db,user)
+    text_output = await stt(file)
+    result = await chat(text_output,db,user)
     return result
 
-@router.websocket("/voice-chat")
-async def voice_chat_websocket(
-    websocket: WebSocket,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user_ws)
-    ):
-    await websocket.accept()
-    audio_bytes = await websocket.receive_bytes()
-    text_output = await stt(audio_bytes)
-    result = await stream(text_output,db,user)
+# @router.websocket("/voice-chat")
+# async def voice_chat_websocket(
+#     websocket: WebSocket,
+#     db: Session = Depends(get_db),
+#     user: User = Depends(get_current_user_ws)
+#     ):
+#     await websocket.accept()
+#     audio_bytes = await websocket.receive_bytes()
+#     text_output = await stt(audio_bytes)
+#     result = await stream(text_output,db,user)
     
-    return result
+#     return result
 
-@router.post("/stream")
-async def post_stream(
-    request: Optional[str] = Body(default=None),
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user_ws)
-    ):
-    result = await stream(request,db,user)
-    return result
+# @router.post("/stream")
+# async def post_stream(
+#     request: Optional[str] = Body(default=None),
+#     db: Session = Depends(get_db),
+#     user: User = Depends(get_current_user_ws)
+#     ):
+#     result = await stream(request,db,user)
+#     return result
 
-@router.post('/tts')
-async def post_tts(
-    request: Request
-):
-    result = await tts(request)
-    return result
 
