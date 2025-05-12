@@ -5,7 +5,7 @@ from enum import Enum
 from datetime import date, datetime
 
 from database import get_db
-from schemas.chat import (HistoryBase,ChatBase)
+from schemas.chat import (HistoryBase)
 from firebase.firebase_user import get_current_user
 from models import History, User,Chat
 
