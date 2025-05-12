@@ -1,4 +1,5 @@
 # This is a generated file; do not edit or check into version control.
+audio_session=/Users/sue._.kim/.pub-cache/hosted/pub.dev/audio_session-0.1.25/
 audioplayers=/Users/sue._.kim/.pub-cache/hosted/pub.dev/audioplayers-5.2.1/
 audioplayers_android=/Users/sue._.kim/.pub-cache/hosted/pub.dev/audioplayers_android-4.0.3/
 audioplayers_darwin=/Users/sue._.kim/.pub-cache/hosted/pub.dev/audioplayers_darwin-5.0.2/
@@ -33,6 +34,8 @@ image_picker_ios=/Users/sue._.kim/.pub-cache/hosted/pub.dev/image_picker_ios-0.8
 image_picker_linux=/Users/sue._.kim/.pub-cache/hosted/pub.dev/image_picker_linux-0.2.1+2/
 image_picker_macos=/Users/sue._.kim/.pub-cache/hosted/pub.dev/image_picker_macos-0.2.1+2/
 image_picker_windows=/Users/sue._.kim/.pub-cache/hosted/pub.dev/image_picker_windows-0.2.1+1/
+just_audio=/Users/sue._.kim/.pub-cache/hosted/pub.dev/just_audio-0.9.46/
+just_audio_web=/Users/sue._.kim/.pub-cache/hosted/pub.dev/just_audio_web-0.4.15/
 path_provider=/Users/sue._.kim/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
 path_provider_android=/Users/sue._.kim/.pub-cache/hosted/pub.dev/path_provider_android-2.2.17/
 path_provider_foundation=/Users/sue._.kim/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.1/

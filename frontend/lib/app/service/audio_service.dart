@@ -1,11 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class AudioService {
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  final AudioPlayer _player = AudioPlayer();
 
-  /// 마이크 권한을 요청하고, 녹음을 시작합니다.
+  /// 마이크 권한을 요청합니다.
   Future<void> requestMicPermission() async {
     final status = await Permission.microphone.status;
     if (!status.isGranted) {
@@ -13,8 +17,8 @@ class AudioService {
     }
   }
 
+  /// 녹음을 시작합니다.
   Future<void> startRecording() async {
-    // ✅ 마이크 권한 확인 및 요청
     var status = await Permission.microphone.status;
     if (!status.isGranted) {
       status = await Permission.microphone.request();
@@ -23,7 +27,6 @@ class AudioService {
       }
     }
 
-    // ✅ 레코더 초기화
     if (!_recorder.isStopped) {
       await _recorder.stopRecorder();
     }
@@ -32,7 +35,7 @@ class AudioService {
   }
 
   /// 녹음을 멈추고 byte 배열을 반환합니다.
-  Future<List<int>> stopRecordingAndGetBytes() async {
+  Future<Uint8List> stopRecordingAndGetBytes() async {
     final path = await _recorder.stopRecorder();
     if (path == null) {
       throw Exception("녹음 파일 경로를 찾을 수 없습니다.");
@@ -46,8 +49,19 @@ class AudioService {
     return await file.readAsBytes();
   }
 
-  /// 레코더 자원 해제
+  /// 오디오 byte 데이터를 재생합니다. (iOS 대응: 임시 파일로 처리)
+  Future<void> playAudioBytes(Uint8List bytes) async {
+    final tempDir = await getTemporaryDirectory();
+    final filePath = '${tempDir.path}/response.mp3';
+    final file = File(filePath);
+    await file.writeAsBytes(bytes);
+
+    await _player.play(DeviceFileSource(filePath));
+  }
+
+  /// 자원 정리
   void dispose() {
     _recorder.closeRecorder();
+    _player.dispose();
   }
 }

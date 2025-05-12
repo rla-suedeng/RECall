@@ -14,6 +14,7 @@ import 'package:template/app/feature/user/profile_page.dart';
 import 'package:template/app/feature/record/record_page.dart';
 import 'package:template/app/models/rec_model.dart';
 import 'package:template/app/feature/apply/received_apply_page.dart';
+import 'package:template/app/feature/history/chat_detail_page.dart';
 
 extension GoRouterX on GoRouter {
   BuildContext? get context => configuration.navigatorKey.currentContext;
@@ -136,6 +137,14 @@ class RouterService {
             pageBuilder: (context, state) {
               return const MaterialPage(child: ReceivedApplicationsPage());
             }),
+        // router_service.dart 또는 main.dart 내 GoRouter routes 설정
+        GoRoute(
+          path: '/chat_detail/:historyId',
+          builder: (context, state) {
+            final historyId = int.parse(state.pathParameters['historyId']!);
+            return ChatDetailPage(historyId: historyId);
+          },
+        ),
       ], // TODO: Add routes
 
       errorBuilder: (context, state) {

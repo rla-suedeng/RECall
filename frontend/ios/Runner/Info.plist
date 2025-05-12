@@ -51,5 +51,7 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>GIDClientID</key>
+	<string>205678004246-9ikhvq52v9qpfgtmvddoru23s53p4apf.apps.googleusercontent.com</string>
 </dict>
 </plist>

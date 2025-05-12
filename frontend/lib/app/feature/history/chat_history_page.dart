@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/models/history_model.dart';
 import 'package:template/app/api/history_api.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatHistoryPage extends StatefulWidget {
   final int? recId;
@@ -137,13 +138,14 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ListTile(
-                              title: Text(formatChatDate(h.date)),
-                              subtitle: Text(
-                                  h.summary?.toString() ?? 'No Summary',
-                                  overflow: TextOverflow.ellipsis),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {},
-                            ),
+                                title: Text(formatChatDate(h.date)),
+                                subtitle: Text(
+                                    h.summary?.toString() ?? 'No Summary',
+                                    overflow: TextOverflow.ellipsis),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () {
+                                  context.go('/chat_detail/${h.hId}');
+                                }),
                           ),
                         );
                       },
