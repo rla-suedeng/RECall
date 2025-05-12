@@ -132,13 +132,14 @@ async def summarize(db: Session,h_id:int):
     history_list = chat_history_from_db(db, h_id=h_id)
     raw_text=""
     for history in history_list:
-        raw_text+=f"{history["role"]}:{history["parts"][0]["text"]}"
+        raw_text+=f"{history['role']}:{history['parts'][0]['text']}"
 
     instruction = "Following is the converation between Gemini and User. Summarize the conversation around the user in only one short sentence, less than 15 words. \nConversation: "
     instruction += raw_text
-    
+    print(instruction)
     session = model.start_chat()
     response = session.send_message(instruction)
+    print(response.text)
 
     return response.text
 
