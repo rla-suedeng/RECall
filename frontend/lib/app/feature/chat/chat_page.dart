@@ -52,19 +52,18 @@ class _ChatPageState extends State<ChatPage>
       parent: _controller!,
       curve: Curves.easeIn,
     );
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) _controller?.forward();
-    });
 
     _player = AudioPlayer();
     _audioService = AudioService();
-    _startChatSession();
     _audioService.requestMicPermission();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadChatHistory();
+    });
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Future.delayed(const Duration(milliseconds: 100));
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -86,7 +85,7 @@ class _ChatPageState extends State<ChatPage>
     await _player.play();
   }
 
-  Future<void> _startChatSession() async {
+  Future<void> _loadChatHistory() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null) throw Exception("No token");
@@ -98,7 +97,14 @@ class _ChatPageState extends State<ChatPage>
       final base64Audio = data['audio_base64'];
       _imageUrl = extractOriginalImageUrl(data['rec_file']);
 
-      if (initialText != null) {
+      final historyList = await chatApi.getChatHistory(historyId: _hId!);
+      setState(() {
+        _messages.clear();
+        _messages.addAll(historyList);
+      });
+
+      if (initialText != null &&
+          _messages.every((m) => m.content != initialText)) {
         setState(() {
           _messages.add(ChatModel(
             uId: 'gemini',
@@ -110,8 +116,9 @@ class _ChatPageState extends State<ChatPage>
           final audioBytes = chatApi.decodeAudioBase64(base64Audio);
           await _playAudio(audioBytes);
         }
-        _scrollToBottom();
       }
+      _controller?.forward();
+      _scrollToBottom();
     } catch (e) {
       print("❌ 초기 대화 시작 실패: $e");
     }
@@ -129,7 +136,6 @@ class _ChatPageState extends State<ChatPage>
       setState(() => recordingStatus = '💬 Sending audio to server...');
 
       final chatApi = ChatApi(token);
-
       final result = await chatApi.sendMessageWithAudio(
         token: token,
         hId: _hId!,
@@ -252,9 +258,17 @@ class _ChatPageState extends State<ChatPage>
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       constraints: const BoxConstraints(maxWidth: 250),
                       decoration: BoxDecoration(
-                        color:
-                            isUser ? Colors.deepOrangeAccent : Colors.amber[50],
+                        color: isUser ? Colors.deepOrangeAccent : Colors.white,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: isUser
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  blurRadius: 4,
+                                  offset: const Offset(2, 2),
+                                )
+                              ],
                       ),
                       child: Text(
                         msg.content,

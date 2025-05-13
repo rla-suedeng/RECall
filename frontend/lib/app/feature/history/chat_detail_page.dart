@@ -1,13 +1,10 @@
-// ✅ ChatHistoryPage에서 특정 history를 눌렀을 때 채팅 내용을 보여주는 ChatDetailPage로 이동
-// ✅ ChatApi의 getChatHistory를 사용해 히스토리 ID에 해당하는 채팅을 불러오도록 구성
-
-// 먼저, ChatDetailPage를 생성해야 함:
-
 import 'package:flutter/material.dart';
 import 'package:template/app/models/chat_model.dart';
 import 'package:template/app/api/chat_api.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:template/app/routing/router_service.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final int historyId;
@@ -51,7 +48,17 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat Detail')),
+      appBar: AppBar(
+        title: const Text('Chat Detail'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Future.delayed(const Duration(milliseconds: 100), () {
+              context.go(Routes.home);
+            });
+          },
+        ),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : chatList.isEmpty
@@ -61,11 +68,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   itemCount: chatList.length,
                   itemBuilder: (context, index) {
                     final msg = chatList[index];
-                    final isUser = msg.uId == 'user';
+                    final isGemini = msg.uId.trim().toLowerCase() == 'gemini';
                     return Column(
-                      crossAxisAlignment: isUser
-                          ? CrossAxisAlignment.end
-                          : CrossAxisAlignment.start,
+                      crossAxisAlignment: isGemini
+                          ? CrossAxisAlignment.start
+                          : CrossAxisAlignment.end,
                       children: [
                         Text(
                           formatTimestamp(msg.timestamp),
@@ -78,15 +85,23 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           constraints: const BoxConstraints(maxWidth: 250),
                           decoration: BoxDecoration(
-                            color: isUser
-                                ? Colors.deepOrangeAccent
-                                : Colors.amber[50],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                              color: isGemini
+                                  ? Colors.white
+                                  : Colors.deepOrangeAccent,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: isGemini
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(2, 2),
+                                      )
+                                    ]
+                                  : []),
                           child: Text(
                             msg.content,
                             style: TextStyle(
-                              color: isUser ? Colors.white : Colors.black87,
+                              color: isGemini ? Colors.black87 : Colors.white,
                             ),
                           ),
                         ),

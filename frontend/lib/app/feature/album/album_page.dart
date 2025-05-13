@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:template/app/theme/colors.dart';
 import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/routing/router_service.dart';
+import 'package:go_router/go_router.dart';
 import 'package:template/app/models/rec_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/api/rec_api.dart';
