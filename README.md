@@ -1,4 +1,39 @@
-# Git 협업
+# RECall
+
+Google APAC Solution Challenge
+
+- Belonging: GDG-KU on Campus
+
+### Problem Statement
+
+Improving Accessibility and Personalization in Reminiscence Therapy for Dementia Patients Using Large Language Models
+
+### Features
+
+- Image-Based Conversation: Patients engage in conversations centered around photos related to their personal memories
+
+- LLM-Driven Dialogue: Gemini actively leads the conversation by asking thoughtful questions, carefully triggering the patient's memory through elaborate prompting.
+
+- Voice Interaction: Using the Google Speech API, patients can interact with Gemini by speaking, eliminating the need for text input.
+
+- User-Friendly Interface: A simple and intuitive interface allows patients to easily participate in the therapy.
+
+### Stacks
+
+- FE: Flutter, Figma
+- BE: FastAPI, Firebase, MySQL
+- AI: Gemini, Pytorch, Google STT TTS
+
+### Members
+
+| Name          | Role        | GitHub                                        | Techinical Stack                    |
+| ------------- | ----------- | --------------------------------------------- | ----------------------------------- |
+| Suhyun Kim    | Leader, FE  | [rla-suedeng](https://github.com/rla-suedeng) | Flutter, React, Pytorch             |
+| Jeongmin Moon | AI(LLM)     | [strn18](https://github.com/strn18)           | Pytorch, React, Express, TypeORM    |
+| Hyunjin Lee   | PM, AI(LLM) | [hyunjin09](https://github.com/hyunjin09)     | React, Node.js, Pytorch, Tensorflow |
+| Yunji Cho     | BE          | [robosun78](https://github.com/robosun78)     | FastAPI, Django, Pytorch            |
+
+## Git Rules
 
 ```bash
 git checkout develop
@@ -7,7 +42,7 @@ git pull origin develop
 git checkout -b feature/your-feature-name
 ```
 
-### 개발 작업 후
+### After Develop
 
 ```bash
 git add .
@@ -18,51 +53,14 @@ git push origin feature/your-feature-name
 ### Conventional Commits
 
 ```bash
-feat: 새로운 기능
-fix: 버그 수정
-docs: 문서
-style: 스타일 (포맷팅 등)
-refactor: 리팩토링
-test: 테스트 코드
-chore: 기타 변경
-mod: 버그는 아니나 코드 일부 수정
+feat: new feature
+fix: fix bug
+docs: documents
+style: style formatting
+refactor: code refactoring
+test: test code or dummy code
+chore: etc difference
+mod: not bug but modifing code
 ```
 
-# PR 보내기!
-
-### 시작하기
-
-[Coding Style](https://github.com/1kl1/flutter_template/blob/main/coding_style.pdf)
-
-[State Management](https://github.com/1kl1/flutter_template/blob/main/state_management.pdf)
-
-[Code Generation](https://github.com/1kl1/flutter_template/blob/main/code_generation.pdf)
-
-[Api Handling](https://github.com/1kl1/flutter_template/blob/main/api_handling.pdf)
-
-[Recommendations](https://github.com/1kl1/flutter_template/blob/main/recommendations.pdf)
-
-### 요구사항
-
-- Flutter SDK
-- Dart SDK
-- FVM(Flutter Version Management)
-- Android Studio / VS Code
-- Git
-
-### 설치 및 실행
-
-1. 저장소 클론하기
-
-```bash
-git clone https://github.com/linkive/favy_app/
-cd favy
-```
-
-2. FVM을 이용한 Flutter 버전 설정
-
-3. 의존성 패키지 설치
-
-```bash
-flutter pub get
-```
+### Send PR
