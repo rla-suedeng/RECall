@@ -58,31 +58,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Future<void> fetchUserInfo() async {
-  //   final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-  //   if (idToken == null) {
-  //     print("❌ Firebase ID 토큰이 null입니다.");
-  //     return;
-  //   }
-  //   final userApi = GetIt.I<UserApi>();
-  //   userApi.setAuthToken(idToken);
-
-  //   final result = await userApi.getUser();
-
-  //   if (result.isSuccess) {
-  //     setState(() {
-  //       user = result.data;
-  //       isLoading = false;
-  //     });
-  //   } else {
-  //     final error = result.error;
-  //     print("❌ 유저 정보 불러오기 실패: ${error.message} (code: ${error.statusCode})");
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
-
   Future<void> fetchHomeInfo() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
