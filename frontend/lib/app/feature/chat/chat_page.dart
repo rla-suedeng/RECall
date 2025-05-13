@@ -91,27 +91,32 @@ class _ChatPageState extends State<ChatPage>
         _messages.clear();
         _messages.addAll(historyList);
       });
-
-      if (initialText != null &&
-          _messages.every((m) => m.content != initialText)) {
-        final audioBytes =
-            base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
-
+      final alreadyExists = _messages.any(
+          (m) => m.uId == 'gemini' && m.content.trim() == initialText.trim());
+      debugPrint("✅ initialText: $initialText");
+      debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
+      debugPrint("✅ 조건 비교 결과: $alreadyExists");
+      final audioBytes =
+          base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
+      final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
+      if (initialText != null && !alreadyExists) {
+        debugPrint("🔥 inside condition");
         setState(() {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: initialText,
-            timestamp: DateTime.now(),
+            timestamp: createdAt ?? DateTime.now(),
           ));
         });
-        print("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
-        print("🎧 decoded audioBytes length: ${audioBytes?.length}");
-
-        if (audioBytes != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await _audioService.playAudioBytes(audioBytes);
-          });
-        }
+        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
+        debugPrint("🎧 decoded audioBytes length: ${audioBytes?.length}");
+      }
+      if (audioBytes != null) {
+        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
+        debugPrint("🎧 decoded audioBytes length: ${audioBytes.length}");
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await _audioService.playAudioBytes(audioBytes);
+        });
       }
 
       _controller?.forward();
@@ -197,7 +202,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void dispose() {
     _controller?.dispose();
-    //_audioService.dispose();
     _player.dispose();
     super.dispose();
   }
