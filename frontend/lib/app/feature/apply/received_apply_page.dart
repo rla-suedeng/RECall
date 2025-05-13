@@ -72,7 +72,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
-              labelText: 'imput format: YYYY-MM-DD ',
+              labelText: 'input format: YYYY-MM-DD ',
             ),
           ),
           actions: [

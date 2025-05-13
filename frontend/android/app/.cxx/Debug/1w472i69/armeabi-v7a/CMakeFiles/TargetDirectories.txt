@@ -1,0 +1,2 @@
+/Users/sue._.kim/Documents/SolutionChallenge/RECall-FE/frontend/android/app/.cxx/Debug/1w472i69/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/sue._.kim/Documents/SolutionChallenge/RECall-FE/frontend/android/app/.cxx/Debug/1w472i69/armeabi-v7a/CMakeFiles/rebuild_cache.dir

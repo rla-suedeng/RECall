@@ -45,4 +45,5 @@
         </intent>
     </queries>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
 </manifest>
