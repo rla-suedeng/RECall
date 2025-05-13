@@ -44,6 +44,7 @@ ios/Runner/GoogleService-Info.plist
 *.swp
 *.DS_Store
 *.pdf
+.png
 
 # Web 관련 (만약 Flutter web 지원할 경우)
 build/web/
@@ -62,3 +63,5 @@ linux/Flutter/ephemeral/
 backend/mydb.sql
 frontend/windows/flutter/generated_plugins.cmake
 frontend/windows/flutter/generated_plugins.cmake
+image copy.png
+image.png
