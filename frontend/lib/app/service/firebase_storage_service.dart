@@ -23,7 +23,7 @@ class FirebaseStorageService {
       final downloadUrl = await ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
-      print('❌ 이미지 업로드 실패: $e');
+      print('❌ Image Upload Fail: $e');
       return null;
     }
   }

@@ -17,7 +17,7 @@ class UserApi {
     _dio.dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
-  /// 회원가입
+  // post /register
   Future<Result<String>> register({
     required String uId,
     required String password,
@@ -44,7 +44,7 @@ class UserApi {
     );
   }
 
-  /// 사용자 정보 조회
+  /// get /user
   Future<Result<UserModel>> getUser() {
     return _dio.get<UserModel>(
       "/user",
@@ -52,7 +52,7 @@ class UserApi {
     );
   }
 
-  /// 보호자가 환자에게 신청
+  /// post /apply
   Future<void> applyPatient({
     required String email,
     required String idToken,
@@ -67,11 +67,11 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 신청 실패: ${response.body}');
+      throw Exception('🟥 Apply Fail: ${response.body}');
     }
   }
 
-  /// 보호자가 신청한 환자 목록 조회
+  /// get /apply/list
   Future<List<ApplyModel>> getAppliedPatients(String idToken) async {
     final response = await http.get(
       Uri.parse('$baseUrl/apply/list'),
@@ -81,14 +81,14 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 신청 목록 조회 실패');
+      throw Exception('🟥 Failed to retrieve list of received applications');
     }
 
     final List data = jsonDecode(response.body);
     return data.map((e) => ApplyModel.fromJson(e)).toList();
   }
 
-  /// 환자가 받은 보호자 신청 목록 조회
+  // get /accept
   Future<List<ApplyModel>> getReceivedApplications(String idToken) async {
     final response = await http.get(
       Uri.parse('$baseUrl/accept'),
@@ -98,14 +98,14 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 받은 신청 목록 조회 실패');
+      throw Exception('🟥 Failed to retrieve list of received applications');
     }
 
     final List data = jsonDecode(response.body);
     return data.map((e) => ApplyModel.fromJson(e)).toList();
   }
 
-  /// 신청 거절 (보호자 or 환자)
+  // delete /reject/{u_id}
   Future<void> rejectApplication({
     required String userId,
     required String idToken,
@@ -118,11 +118,11 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 신청 거절 실패: ${response.body}');
+      throw Exception('🟥 Reject Fail: ${response.body}');
     }
   }
 
-  /// 신청 수락 (환자 전용)
+  /// post /accept/{uid}/key=birthday
   Future<void> acceptApplication({
     required String userId,
     required String birthday,
@@ -140,7 +140,7 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 신청 수락 실패: ${response.body}');
+      throw Exception('🟥 Accept Fail: ${response.body}');
     }
   }
 
@@ -157,7 +157,7 @@ class UserApi {
       final data = jsonDecode(response.body);
       return ApplyModel.fromJson(data);
     } else if (response.statusCode == 404) {
-      return null; // 연결된 환자 없음
+      return null;
     } else {
       throw Exception('Failed to load linked patient: ${response.body}');
     }

@@ -28,7 +28,7 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!highlight) return const SizedBox.shrink(); // 아무것도 안 보여줌
+    if (!highlight) return const SizedBox.shrink();
 
     return BottomNavigationBar(
       currentIndex: currentIndex ?? 0,

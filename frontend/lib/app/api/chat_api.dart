@@ -15,7 +15,7 @@ class ChatApi {
         'Content-Type': 'application/json',
       };
 
-  /// ✅ 대화방 생성 및 첫 메시지 (enter_chat)
+  /// post /chat/enter
   Future<Map<String, dynamic>> enterChat() async {
     final response = await http.post(
       Uri.parse('$baseUrl/chat/enter'),
@@ -30,7 +30,7 @@ class ChatApi {
     }
   }
 
-  /// ✅ 음성 파일을 보내고 텍스트로 받기 (STT)
+  //post /chat
   Future<String> sendAudioForSTT(Uint8List audioBytes) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/chat'));
     request.headers['Authorization'] = 'Bearer $_token';
@@ -51,7 +51,7 @@ class ChatApi {
     }
   }
 
-  /// ✅ 음성 파일을 전송해 Gemini 응답 + 오디오 받기 (multipart)
+//POST /chat/{h_id}/message
   Future<Map<String, dynamic>> sendMessageWithAudio({
     required String token,
     required int hId,
@@ -78,12 +78,11 @@ class ChatApi {
     }
   }
 
-  /// ✅ 오디오 base64 문자열을 Uint8List로 디코딩
   Uint8List decodeAudioBase64(String base64String) {
     return base64Decode(base64String);
   }
 
-  /// ✅ 채팅 히스토리 조회
+  // get /chat/{h_id}
   Future<List<ChatModel>> getChatHistory({required int historyId}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/chat/$historyId'),

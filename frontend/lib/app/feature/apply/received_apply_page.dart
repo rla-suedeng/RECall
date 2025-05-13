@@ -30,7 +30,6 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
 
   Future<void> _loadApplications() async {
     try {
-      // await Future.delayed(const Duration(milliseconds: 2000));
       final idToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
       if (idToken == null) throw Exception('No ID Token');
 
@@ -51,7 +50,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
         isLoading = false;
       });
     } catch (e) {
-      debugPrint("❌ 불러오기 오류: $e");
+      debugPrint("❌ Fail to load: $e");
       setState(() {
         _applications = [];
         isLoading = false;
@@ -73,7 +72,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
-              labelText: 'YYYY-MM-DD 형식으로 입력',
+              labelText: 'imput format: YYYY-MM-DD ',
             ),
           ),
           actions: [
@@ -103,7 +102,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           .showSnackBar(const SnackBar(content: Text("Application accepted")));
       _loadApplications();
     } catch (e) {
-      debugPrint("❌ 수락 오류: $e");
+      debugPrint("❌ Accept Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text("❌ Application Failed - Check the birthday")),
@@ -119,7 +118,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
       final userApi = UserApi(MyDio(dio: Dio()));
       await userApi.rejectApplication(userId: uId, idToken: idToken);
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("신청 거절됨")));
+          .showSnackBar(const SnackBar(content: Text("Rejected")));
       _loadApplications();
     } catch (e) {
       debugPrint("❌ 거절 오류: $e");

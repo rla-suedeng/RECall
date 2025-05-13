@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:go_router/go_router.dart';
 import 'package:template/app/api/chat_api.dart';
 import 'package:template/app/api/home_api.dart';
-import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
+import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/theme/colors.dart';
 import 'package:template/app/widgets/app_bar.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:get_it/get_it.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/models/rec_model.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -18,7 +18,7 @@ String formatMonthYear(String? dateStr) {
   if (dateStr == null) return 'Unknown';
   try {
     final parsed = DateFormat('yyyy-MM-dd').parse(dateStr);
-    return DateFormat('MMMM yyyy').format(parsed); // 예: June 1975
+    return DateFormat('MMMM yyyy').format(parsed);
   } catch (_) {
     return 'Invalid date';
   }
@@ -58,53 +58,27 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Future<void> fetchUserInfo() async {
-  //   final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-  //   if (idToken == null) {
-  //     print("❌ Firebase ID 토큰이 null입니다.");
-  //     return;
-  //   }
-  //   final userApi = GetIt.I<UserApi>();
-  //   userApi.setAuthToken(idToken);
-
-  //   final result = await userApi.getUser();
-
-  //   if (result.isSuccess) {
-  //     setState(() {
-  //       user = result.data;
-  //       isLoading = false;
-  //     });
-  //   } else {
-  //     final error = result.error;
-  //     print("❌ 유저 정보 불러오기 실패: ${error.message} (code: ${error.statusCode})");
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
-
   Future<void> fetchHomeInfo() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       final homeApi = HomeApi(token);
-      final data = await homeApi.getHomeInfo(); // 여기가 실패하면 null
+      final data = await homeApi.getHomeInfo();
 
       final String name = data['name'] ?? 'User';
       final List<dynamic> recent = data['recent_memory'] ?? [];
       final Map<String, dynamic> counts =
           Map<String, dynamic>.from(data['num_rec'] ?? {});
 
-      print("🟢 전체 데이터: $data");
+      print("🟢 Whole Data: $data");
       print("🟢 recent_memory: ${data['recent_memory']}");
       setState(() {
         userName = name;
-        recentRecs =
-            recent.map((e) => RecModel.fromJson(e)).toList(); // 단순 구조로 맞추면 됨
+        recentRecs = recent.map((e) => RecModel.fromJson(e)).toList();
         categoryCounts =
             counts.map((k, v) => MapEntry(k.toLowerCase(), v as int));
       });
     } catch (e) {
-      print("❌ 홈 정보 가져오기 실패: $e");
+      print("❌ Fail loading Home Info: $e");
       setState(() {
         userName = 'User';
         recentRecs = [];
@@ -116,7 +90,7 @@ class _HomePageState extends State<HomePage> {
   void _showWelcomePopup(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: true, // 바깥 클릭해도 닫힘
+      barrierDismissible: true,
       builder: (context) {
         return Dialog(
           shape:
@@ -126,7 +100,6 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 🧸 로봇 이미지 (asset 경로로 수정 가능)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(100),
                   child: Image.asset(
@@ -360,7 +333,7 @@ class _HomePageState extends State<HomePage> {
   Widget _recentMemoryCard(RecModel rec) {
     final title = rec.title;
     final date = rec.date != null
-        ? DateFormat.yMMMM().format(DateTime.parse(rec.date!)) // 예: June 1975
+        ? DateFormat.yMMMM().format(DateTime.parse(rec.date!)) // ex: June 1975
         : 'Unknown';
     final imageUrl = rec.fileUrl;
 

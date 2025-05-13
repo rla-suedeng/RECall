@@ -36,7 +36,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         isLoading = false;
       });
     } catch (e) {
-      print('❌ 채팅 로딩 실패: $e');
+      print('❌ Fail Chat load: $e');
       setState(() => isLoading = false);
     }
   }
@@ -54,7 +54,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Future.delayed(const Duration(milliseconds: 100), () {
-              context.go(Routes.home);
+              context.go(Routes.history);
             });
           },
         ),

@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:template/app/api/dio_client.dart';
 import 'package:template/app/auth/firebase_auth_service.dart';
@@ -18,8 +17,6 @@ import 'package:template/app/api/user_api.dart';
 import 'package:template/app/auth/auth_service.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/service/secure_storage_service.dart';
-import 'package:template/app/theme/colors.dart';
-import 'package:get_it/get_it.dart';
 
 import 'package:template/app/models/user_model.dart';
 import 'package:template/app/theme/theme_service.dart';

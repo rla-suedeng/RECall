@@ -22,10 +22,10 @@ class RecApi {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      print("✅ Rec 저장 성공: ${response.body}");
+      print("✅ Rec Save Success: ${response.body}");
       return true;
     } else {
-      print("❌ Rec 저장 실패: ${response.statusCode} - ${response.body}");
+      print("❌ Rec Save Fail ${response.statusCode} - ${response.body}");
       return false;
     }
   }
@@ -50,7 +50,7 @@ class RecApi {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => RecModel.fromJson(json)).toList();
     } else {
-      print('❌ 목록 불러오기 실패: ${response.statusCode} - ${response.body}');
+      print('❌ List Load Fail: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to fetch recs');
     }
   }
@@ -99,11 +99,11 @@ class RecApi {
         final decoded = jsonDecode(response.body);
         return RecModel.fromJson(decoded);
       } else {
-        print("❌ Rec 수정 실패: ${response.statusCode} - ${response.body}");
+        print("❌ Rec Modify Fail: ${response.statusCode} - ${response.body}");
         return null;
       }
     } catch (e) {
-      print("❌ 예외 발생 during putRec: $e");
+      print("❌ Exception occur during putRec: $e");
       return null;
     }
   }

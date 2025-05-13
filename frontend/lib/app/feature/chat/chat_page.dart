@@ -74,17 +74,6 @@ class _ChatPageState extends State<ChatPage>
     });
   }
 
-  Future<void> _playAudio(Uint8List audioBytes) async {
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/temp_audio.mp3');
-    await tempFile.writeAsBytes(audioBytes);
-
-    await _player.stop();
-    await _player.setFilePath(tempFile.path);
-    await _player.setVolume(1.0);
-    await _player.play();
-  }
-
   Future<void> _loadChatHistory() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -102,25 +91,38 @@ class _ChatPageState extends State<ChatPage>
         _messages.clear();
         _messages.addAll(historyList);
       });
-
-      if (initialText != null &&
-          _messages.every((m) => m.content != initialText)) {
+      final alreadyExists = _messages.any(
+          (m) => m.uId == 'gemini' && m.content.trim() == initialText.trim());
+      debugPrint("✅ initialText: $initialText");
+      debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
+      debugPrint("✅ comparision results: $alreadyExists");
+      final audioBytes =
+          base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
+      final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
+      if (initialText != null && !alreadyExists) {
+        debugPrint("🔥 inside condition");
         setState(() {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: initialText,
-            timestamp: DateTime.now(),
+            timestamp: createdAt ?? DateTime.now(),
           ));
         });
-        if (base64Audio != null) {
-          final audioBytes = chatApi.decodeAudioBase64(base64Audio);
-          await _playAudio(audioBytes);
-        }
+        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
+        debugPrint("🎧 decoded audioBytes length: ${audioBytes?.length}");
       }
+      if (audioBytes != null) {
+        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
+        debugPrint("🎧 decoded audioBytes length: ${audioBytes.length}");
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await _audioService.playAudioBytes(audioBytes);
+        });
+      }
+
       _controller?.forward();
       _scrollToBottom();
     } catch (e) {
-      print("❌ 초기 대화 시작 실패: $e");
+      print("❌ Fail initiate: $e");
     }
   }
 
@@ -129,11 +131,14 @@ class _ChatPageState extends State<ChatPage>
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null || _hId == null) throw Exception("No token or chat id");
 
+      await _player.stop();
+
       setState(() => recordingStatus = '🎙️ Recording...');
+
       await _audioService.startRecording();
       await Future.delayed(const Duration(seconds: 5));
       final audioBytes = await _audioService.stopRecordingAndGetBytes();
-      setState(() => recordingStatus = '💬 Sending audio to server...');
+      setState(() => recordingStatus = '💬 Getting message from Gemini...');
 
       final chatApi = ChatApi(token);
       final result = await chatApi.sendMessageWithAudio(
@@ -166,7 +171,18 @@ class _ChatPageState extends State<ChatPage>
 
       if (responseAudioBase64 != null) {
         final responseAudio = chatApi.decodeAudioBase64(responseAudioBase64);
-        await _playAudio(responseAudio);
+        await _audioService.playAudioBytes(responseAudio);
+      }
+
+      if (userText?.toLowerCase().contains("goodbye") ?? false) {
+        _messages.add(ChatModel(
+          uId: 'user',
+          content: userText,
+          timestamp: DateTime.now(),
+        ));
+        Future.delayed(const Duration(milliseconds: 200), () {
+          _scrollToBottom();
+        });
       }
 
       if ((responseText?.toLowerCase().contains("peaceful and joyful day") ??
@@ -186,7 +202,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void dispose() {
     _controller?.dispose();
-    _audioService.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -212,7 +227,7 @@ class _ChatPageState extends State<ChatPage>
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  print('❌ 이미지 로딩 실패: $error');
+                  print('❌ Fail to load image: $error');
                   return Container(
                     height: MediaQuery.of(context).size.height * 0.3,
                     color: Colors.grey[300],
