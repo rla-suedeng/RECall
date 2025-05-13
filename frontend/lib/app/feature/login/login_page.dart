@@ -105,9 +105,10 @@ class _LoginPageState extends State<LoginPage> {
                   icon: const Icon(Icons.g_mobiledata),
                   label: const Text('Sign in with Google'),
                   onPressed: () async {
-                    debugPrint('✅ 구글 로그인 버튼 눌림');
+                    debugPrint('✅ Google Login is pushed');
+                    // TODO: google login
                     if (mounted) {
-                      context.go(Routes.home); // ✅ Google도 그냥 HomePage 이동
+                      context.go(Routes.home);
                     }
                   },
                 ),

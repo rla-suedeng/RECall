@@ -20,7 +20,8 @@ class HomeApi {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('❌ 홈 정보 불러오기 실패: ${response.statusCode} - ${response.body}');
+      print(
+          '❌ Failed to load home info: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to load home info');
     }
   }

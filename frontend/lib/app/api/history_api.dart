@@ -22,7 +22,7 @@ class HistoryApi {
       final List<dynamic> jsonData = jsonDecode(response.body);
       return jsonData.map((e) => HistoryModel.fromJson(e)).toList();
     } else {
-      print('❌ history fetch 실패: ${response.statusCode} - ${response.body}');
+      print('❌ history fetch Fail: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to fetch history');
     }
   }

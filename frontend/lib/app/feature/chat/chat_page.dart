@@ -95,7 +95,7 @@ class _ChatPageState extends State<ChatPage>
           (m) => m.uId == 'gemini' && m.content.trim() == initialText.trim());
       debugPrint("✅ initialText: $initialText");
       debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
-      debugPrint("✅ 조건 비교 결과: $alreadyExists");
+      debugPrint("✅ comparision results: $alreadyExists");
       final audioBytes =
           base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
       final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
@@ -122,7 +122,7 @@ class _ChatPageState extends State<ChatPage>
       _controller?.forward();
       _scrollToBottom();
     } catch (e) {
-      print("❌ 초기 대화 시작 실패: $e");
+      print("❌ Fail initiate: $e");
     }
   }
 
@@ -227,7 +227,7 @@ class _ChatPageState extends State<ChatPage>
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  print('❌ 이미지 로딩 실패: $error');
+                  print('❌ Fail to load image: $error');
                   return Container(
                     height: MediaQuery.of(context).size.height * 0.3,
                     color: Colors.grey[300],

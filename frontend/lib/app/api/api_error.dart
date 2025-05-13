@@ -26,7 +26,7 @@ class ApiError {
   factory ApiError.unknown(dynamic e) {
     return ApiError(
       type: ErrorType.unknown,
-      message: "알 수 없는 오류가 발생했습니다.",
+      message: "Unknown Error Occured",
       rawError: e,
     );
   }
@@ -41,7 +41,7 @@ class ApiError {
       case DioExceptionType.connectionError:
         return ApiError(
           type: ErrorType.network,
-          message: "네트워크 연결에 문제가 있습니다.",
+          message: "Network Connection Error.",
           statusCode: statusCode,
           rawError: error,
         );
@@ -50,7 +50,7 @@ class ApiError {
         if (statusCode == null) {
           return ApiError(
             type: ErrorType.unknown,
-            message: "알 수 없는 오류가 발생했습니다.",
+            message: "Unknown Error Occured.",
             rawError: error,
           );
         }
@@ -58,35 +58,35 @@ class ApiError {
         if (statusCode == 400) {
           return ApiError(
             type: ErrorType.badRequest,
-            message: "잘못된 요청입니다.",
+            message: "Unvalid Request",
             statusCode: statusCode,
             rawError: error,
           );
         } else if (statusCode == 401 || statusCode == 403) {
           return ApiError(
             type: ErrorType.unauthorized,
-            message: "인증에 실패했습니다.",
+            message: "Fail authentication",
             statusCode: statusCode,
             rawError: error,
           );
         } else if (statusCode == 404) {
           return ApiError(
             type: ErrorType.notFound,
-            message: "요청한 리소스를 찾을 수 없습니다.",
+            message: "Cannot find the resource",
             statusCode: statusCode,
             rawError: error,
           );
         } else if (statusCode >= 500) {
           return ApiError(
             type: ErrorType.serverError,
-            message: "서버 오류가 발생했습니다.",
+            message: "Server Error Occur",
             statusCode: statusCode,
             rawError: error,
           );
         } else {
           return ApiError(
             type: ErrorType.unknown,
-            message: "알 수 없는 오류가 발생했습니다.",
+            message: "Unknown Error Occur",
             statusCode: statusCode,
             rawError: error,
           );
@@ -95,7 +95,7 @@ class ApiError {
       default:
         return ApiError(
           type: ErrorType.unknown,
-          message: "알 수 없는 오류가 발생했습니다.",
+          message: "Unknown Error Occur",
           rawError: error,
         );
     }

@@ -73,7 +73,6 @@ class RouterService {
         GoRoute(
           path: Routes.recorderRegister,
           builder: (context, state) {
-            // var args = state.extra;
             return const RecorderRegisterPage();
           },
         ),
@@ -86,7 +85,6 @@ class RouterService {
         GoRoute(
           path: Routes.addRecord,
           builder: (context, state) {
-            // var args = state.extra;
             return const AddRecordPage();
           },
         ),
@@ -137,7 +135,6 @@ class RouterService {
             pageBuilder: (context, state) {
               return const MaterialPage(child: ReceivedApplicationsPage());
             }),
-        // router_service.dart 또는 main.dart 내 GoRouter routes 설정
         GoRoute(
           path: '/chat_detail/:historyId',
           builder: (context, state) {

@@ -36,7 +36,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         isLoading = false;
       });
     } catch (e) {
-      print('❌ 채팅 로딩 실패: $e');
+      print('❌ Fail Chat load: $e');
       setState(() => isLoading = false);
     }
   }

@@ -153,8 +153,7 @@ class _AlbumPageState extends State<AlbumPage> {
         children: [
           const SizedBox(height: 12),
 
-          /// 드롭다운 필터들
-          /// 드롭다운 필터들
+          /// Dropdown filter
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(

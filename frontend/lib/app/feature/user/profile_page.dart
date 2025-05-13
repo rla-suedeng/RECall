@@ -58,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
           isLoading = false;
         });
       } else {
-        print("\u274c 유저 정보 로딩 실패: \${result.error.message}");
+        print("\u274c User info load fail: \${result.error.message}");
         setState(() => isLoading = false);
       }
       if (!user!.role) {
@@ -68,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } catch (e) {
-      print("\u274c 예외 발생: \$e");
+      print("\u274c Execption occur: \$e");
       setState(() => isLoading = false);
     }
   }
@@ -282,9 +282,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: ElevatedButton(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
-                        // 로그아웃 후 라우팅 (예: 로그인 화면으로)
-                        context
-                            .go(Routes.login); // 또는 Navigator.pushReplacement 등
+
+                        context.go(Routes.login);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepOrangeAccent,

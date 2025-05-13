@@ -81,8 +81,8 @@ class _AddRecordPageState extends State<AddRecordPage> {
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           width: double.infinity,
-                          height: 220, // 원하는 높이
-                          color: Colors.grey[200], // optional: 배경색 또는 로딩 대비
+                          height: 220,
+                          color: Colors.grey[200],
                           child: Image.network(
                             uploadedImageUrl!,
                             fit: BoxFit.cover,
@@ -154,7 +154,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              // 기존 "Description" 섹션 아래 교체
+
               const Text('Where'),
               const SizedBox(height: 8),
               TextField(
@@ -233,7 +233,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
                     final success = await recApi.createRec(rec);
 
                     if (success) {
-                      debugPrint('✅ Rec 저장 성공');
+                      debugPrint('✅ Rec Save Success');
                       if (context.mounted) {
                         if (context.canPop()) {
                           context.pop();
@@ -243,7 +243,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
                       }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('❌ 기록 저장 실패')),
+                        const SnackBar(content: Text('❌ Fail to Save')),
                       );
                     }
                     debugPrint('✅ Memory Saved: ${titleController.text}');
@@ -281,17 +281,17 @@ class _AddRecordPageState extends State<AddRecordPage> {
                   uploadedImageUrl = url;
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('✅ 이미지 업로드 성공')),
+                  const SnackBar(content: Text('✅ Image Upload Success')),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('❌ 이미지 선택이 취소되었습니다.')),
+                  const SnackBar(content: Text('❌ Cancel Image Select')),
                 );
               }
             } catch (e) {
-              debugPrint('❌ 이미지 업로드 실패: $e');
+              debugPrint('❌ Image Upload Fail: $e');
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('오류 발생: $e')),
+                SnackBar(content: Text('Error Occur: $e')),
               );
             }
           },

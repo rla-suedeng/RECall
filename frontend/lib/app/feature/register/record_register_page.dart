@@ -55,9 +55,9 @@ class _RecorderRegisterPageState extends State<RecorderRegisterPage> {
         ),
       );
     } catch (e) {
-      debugPrint('❌ 신청 오류: $e');
+      debugPrint('❌ Apply Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('신청 실패: ${e.toString()}')),
+        SnackBar(content: Text('Apply Fail: ${e.toString()}')),
       );
     } finally {
       setState(() {

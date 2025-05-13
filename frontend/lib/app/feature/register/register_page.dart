@@ -40,7 +40,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   minHeight: constraints.maxHeight,
                 ),
                 child: IntrinsicHeight(
-                  // ✅ Column 높이를 자식에 맞추기
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -215,19 +214,19 @@ class _RegisterPageState extends State<RegisterPage> {
                                 // save to FastAPI DB
                                 final result = await userApi.register(
                                   uId: user.uid,
-                                  password: password, //해시 처리
+                                  password: password,
                                   role: _selectedRole ==
                                       "reminder", //reminder = 1
                                   fName: firstNameController.text.trim(),
                                   lName: lastNameController.text.trim(),
                                   birthday: birthDateController.text.trim(),
                                   email: email,
-                                  pId: null, //추후 연결
+                                  pId: null,
                                 );
                                 if (result.isSuccess) {
                                   debugPrint('✅ DB 등록 성공: ${result.data}');
 
-                                  // 역할에 따라 페이지 이동
+                                  // Page
                                   if (_selectedRole == 'recorder') {
                                     context.go(Routes.recorderRegister);
                                   } else {
@@ -235,7 +234,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   }
                                 } else {
                                   final error = result.error;
-                                  debugPrint('❌ DB 등록 실패: ${error.message}');
+                                  debugPrint(
+                                      '❌ DB Register Fail: ${error.message}');
                                   showDialog(
                                     context: context,
                                     builder: (context) => AlertDialog(
@@ -254,7 +254,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 }
                               }
                             } catch (e) {
-                              debugPrint('❌ Regiset Fail: $e');
+                              debugPrint('❌ Regiser Fail: $e');
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -296,7 +296,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                       ),
-                      const Spacer(), // ✅ 남은 공간 채우기
+                      const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
