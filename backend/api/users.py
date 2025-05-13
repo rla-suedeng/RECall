@@ -77,7 +77,8 @@ def accept_care(
         raise HTTPException(status_code=404, detail="Application not found")
     guardian.p_id = user.u_id
     remain_apply = db.query(Apply).filter_by(u_id=user_id).all()
-    db.delete(remain_apply)
+    for apply in remain_apply:
+        db.delete(apply)
     db.commit()
     return {"message": "accept"}
 

@@ -189,6 +189,7 @@ async def send_messages(
             end_text = "Wishing you a peaceful and joyful day. I'm here anytime you want to talk."
             audio = await tts(end_text)
             return {
+                "user_text":"goodbye",
                 "text": end_text,
                 "audio_base64": base64.b64encode(audio).decode()
             }

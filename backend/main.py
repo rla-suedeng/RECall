@@ -16,6 +16,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI() # 인스턴스 생성
 
+def include_cors(app):
+    # 모든 origin에서 발생하는 요청들을 처리해 줌
+    app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/", response_model=RootResponse)
 def get_root_summary(
     db: Session = Depends(get_db),
