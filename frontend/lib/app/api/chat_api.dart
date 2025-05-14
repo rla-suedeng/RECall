@@ -26,7 +26,7 @@ class ChatApi {
       return jsonDecode(response.body);
     } else {
       throw Exception(
-          '❌ enter_chat 실패: ${response.statusCode} - ${response.body}');
+          '❌ enter_chat Fail: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -47,7 +47,7 @@ class ChatApi {
     if (response.statusCode == 200) {
       return jsonDecode(response.body)['transcript'];
     } else {
-      throw Exception('❌ STT 실패: ${response.body}');
+      throw Exception('❌ STT Fail: ${response.body}');
     }
   }
 

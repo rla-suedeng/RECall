@@ -7,7 +7,6 @@ class FirebaseStorageService {
   final _storage = FirebaseStorage.instance;
   final _picker = ImagePicker();
 
-  /// 유저 ID를 전달받아, 해당 유저 전용 경로에 업로드
   Future<String?> pickAndUploadImage({required String userId}) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return null;
@@ -16,7 +15,6 @@ class FirebaseStorageService {
     final fileName = path.basename(file.path);
 
     try {
-      // ✅ 유저별 디렉토리 경로 지정
       final ref = _storage.ref().child('uploads/$userId/$fileName');
       await ref.putFile(file);
 

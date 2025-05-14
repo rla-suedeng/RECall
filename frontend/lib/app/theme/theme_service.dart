@@ -26,7 +26,7 @@ class AppThemes {
       ),
     ),
   );
-
+  // TO DO
   static ThemeData highContrastTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,

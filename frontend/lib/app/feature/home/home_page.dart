@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:template/app/api/chat_api.dart';
 import 'package:template/app/api/home_api.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
@@ -69,8 +68,6 @@ class _HomePageState extends State<HomePage> {
       final Map<String, dynamic> counts =
           Map<String, dynamic>.from(data['num_rec'] ?? {});
 
-      print("🟢 Whole Data: $data");
-      print("🟢 recent_memory: ${data['recent_memory']}");
       setState(() {
         userName = name;
         recentRecs = recent.map((e) => RecModel.fromJson(e)).toList();
@@ -333,7 +330,7 @@ class _HomePageState extends State<HomePage> {
   Widget _recentMemoryCard(RecModel rec) {
     final title = rec.title;
     final date = rec.date != null
-        ? DateFormat.yMMMM().format(DateTime.parse(rec.date!)) // ex: June 1975
+        ? DateFormat.yMMMM().format(DateTime.parse(rec.date!))
         : 'Unknown';
     final imageUrl = rec.fileUrl;
 

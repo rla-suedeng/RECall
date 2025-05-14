@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:template/app/constants/api_constants.dart';
 import 'package:template/app/models/user_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
@@ -11,7 +10,6 @@ Future<UserModel> loginWithEmail({
   required String password,
 }) async {
   try {
-    // 🔐 Firebase 로그인 시도
     final userCredential =
         await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: email,
@@ -21,12 +19,9 @@ Future<UserModel> loginWithEmail({
     final user = userCredential.user;
 
     if (user != null) {
-      // ✅ 로그인 성공 → ID 토큰 획득
       final idToken = await user.getIdToken(true);
       await Future.delayed(const Duration(seconds: 1));
-      print('🔥 로그인 성공, 토큰: $idToken');
 
-      // ✅ 백엔드로 토큰 전송
       if (idToken != null) {
         await sendIdTokenToBackend(idToken);
 
@@ -37,21 +32,21 @@ Future<UserModel> loginWithEmail({
         GetIt.I.registerSingleton<UserModel>(userModel);
         return userModel;
       } else {
-        throw Exception("❌ 로그인 실패: ID 토큰이 null입니다.");
+        throw Exception("❌ Login Fail: ID token is null.");
       }
     } else {
-      throw Exception("❌ 로그인 실패: 사용자 정보 없음");
+      throw Exception("❌ Login Fail: no user info");
     }
   } on FirebaseAuthException catch (e) {
     if (e.code == 'user-not-found') {
-      throw Exception('해당 이메일을 가진 사용자가 없습니다.');
+      throw Exception('There is no user with that email.');
     } else if (e.code == 'wrong-password') {
-      throw Exception('비밀번호가 틀렸습니다.');
+      throw Exception('Wrong Password');
     } else {
-      throw Exception('Firebase 로그인 오류: ${e.message}');
+      throw Exception('Firebase Login Error: ${e.message}');
     }
   } catch (e) {
-    throw Exception('알 수 없는 오류: $e');
+    throw Exception('Unknown Error: $e');
   }
 }
 
@@ -67,12 +62,12 @@ Future<void> sendIdTokenToBackend(String idToken) async {
     );
 
     if (response.statusCode == 200) {
-      print("✅ 백엔드 응답: ${response.body}");
+      print("✅ BackEnd Response: ${response.body}");
     } else {
-      print("❌ 백엔드 오류: ${response.statusCode} - ${response.body}");
+      print("❌ BackEnd Error: ${response.statusCode} - ${response.body}");
     }
   } catch (e) {
-    print("백엔드 요청 실패: $e");
+    print("BackEnd Fail: $e");
   }
 }
 

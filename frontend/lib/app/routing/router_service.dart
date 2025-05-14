@@ -142,8 +142,7 @@ class RouterService {
             return ChatDetailPage(historyId: historyId);
           },
         ),
-      ], // TODO: Add routes
-
+      ],
       errorBuilder: (context, state) {
         return const ErrorPage();
       },
