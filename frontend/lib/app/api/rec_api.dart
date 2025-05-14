@@ -35,7 +35,7 @@ class RecApi {
     String? keyword,
     String order = 'desc',
   }) async {
-    final uri = Uri.parse('$baseUrl/rec').replace(queryParameters: {
+    final uri = Uri.parse('$baseUrl/rec/').replace(queryParameters: {
       if (category != null) 'category': category.toLowerCase(),
       if (keyword != null) 'keyword': keyword,
       'order': order,

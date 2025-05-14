@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:go_router/go_router.dart';
@@ -74,6 +74,10 @@ class _ChatPageState extends State<ChatPage>
     });
   }
 
+  bool isSameMessage(ChatModel m, String initialText) {
+    return m.uId == 'gemini' && m.content.trim() == initialText.trim();
+  }
+
   Future<void> _loadChatHistory() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -91,29 +95,23 @@ class _ChatPageState extends State<ChatPage>
         _messages.clear();
         _messages.addAll(historyList);
       });
-      final alreadyExists = _messages.any(
-          (m) => m.uId == 'gemini' && m.content.trim() == initialText.trim());
-      debugPrint("✅ initialText: $initialText");
-      debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
-      debugPrint("✅ comparision results: $alreadyExists");
+      final createdAt = DateTime.tryParse(data['timestamp'] ?? '')?.toUtc();
+      final alreadyExists = initialText != null &&
+          _messages.any((m) => isSameMessage(m, initialText));
+
       final audioBytes =
           base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
-      final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
+
       if (initialText != null && !alreadyExists) {
-        debugPrint("🔥 inside condition");
         setState(() {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: initialText,
-            timestamp: createdAt ?? DateTime.now(),
+            timestamp: createdAt ?? DateTime.now().toUtc(),
           ));
         });
-        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
-        debugPrint("🎧 decoded audioBytes length: ${audioBytes?.length}");
       }
       if (audioBytes != null) {
-        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
-        debugPrint("🎧 decoded audioBytes length: ${audioBytes.length}");
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _audioService.playAudioBytes(audioBytes);
         });
@@ -156,14 +154,14 @@ class _ChatPageState extends State<ChatPage>
           _messages.add(ChatModel(
             uId: 'user',
             content: userText,
-            timestamp: DateTime.now(),
+            timestamp: DateTime.now().toUtc(),
           ));
         }
         if (responseText != null) {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: responseText,
-            timestamp: DateTime.now(),
+            timestamp: DateTime.now().toUtc(),
           ));
         }
         recordingStatus = '✅ Reply received!';
@@ -178,7 +176,7 @@ class _ChatPageState extends State<ChatPage>
         _messages.add(ChatModel(
           uId: 'user',
           content: userText,
-          timestamp: DateTime.now(),
+          timestamp: DateTime.now().toUtc(),
         ));
         Future.delayed(const Duration(milliseconds: 200), () {
           _scrollToBottom();
@@ -187,14 +185,14 @@ class _ChatPageState extends State<ChatPage>
 
       if ((responseText?.toLowerCase().contains("peaceful and joyful day") ??
           false)) {
-        Future.delayed(const Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 4), () {
           if (mounted) context.go(Routes.home);
         });
       }
 
       _scrollToBottom();
     } catch (e) {
-      print("❌ 오류 발생: $e");
+      print("❌ Error : $e");
       setState(() => recordingStatus = '❌ Error occurred');
     }
   }
@@ -257,11 +255,11 @@ class _ChatPageState extends State<ChatPage>
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final isUser = msg.uId == 'user';
+                final isGemini = msg.uId == 'gemini';
                 return Column(
-                  crossAxisAlignment: isUser
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
+                  crossAxisAlignment: isGemini
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.end,
                   children: [
                     Text(
                       TimeOfDay.fromDateTime(msg.timestamp).format(context),
@@ -273,22 +271,23 @@ class _ChatPageState extends State<ChatPage>
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       constraints: const BoxConstraints(maxWidth: 250),
                       decoration: BoxDecoration(
-                        color: isUser ? Colors.deepOrangeAccent : Colors.white,
+                        color:
+                            isGemini ? Colors.white : Colors.deepOrangeAccent,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: isUser
-                            ? []
-                            : [
+                        boxShadow: isGemini
+                            ? [
                                 BoxShadow(
                                   color: Colors.grey.withOpacity(0.2),
                                   blurRadius: 4,
                                   offset: const Offset(2, 2),
                                 )
-                              ],
+                              ]
+                            : [],
                       ),
                       child: Text(
                         msg.content,
                         style: TextStyle(
-                          color: isUser ? Colors.white : Colors.black87,
+                          color: isGemini ? Colors.black87 : Colors.white,
                         ),
                       ),
                     ),

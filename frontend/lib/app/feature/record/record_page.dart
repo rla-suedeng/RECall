@@ -35,7 +35,7 @@ class _RecordPageState extends State<RecordPage> {
         isLoading = false;
       });
     } catch (e) {
-      debugPrint("❌ Rec Detail 불러오기 실패: $e");
+      debugPrint("❌ Rec Detail load fail: $e");
     }
   }
 
@@ -45,13 +45,13 @@ class _RecordPageState extends State<RecordPage> {
       final api = RecApi(token);
       await api.deleteRec(widget.recId);
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('✅ 기록 삭제 성공')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('✅ Delete Rec Success')));
         context.go(Routes.album);
       }
     } catch (e) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('❌ 삭제 실패: $e')));
+          .showSnackBar(SnackBar(content: Text('❌ Delete Fail: $e')));
     }
   }
 
@@ -133,7 +133,7 @@ Notes: ${noteController.text.trim()}''';
               } else {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('❌ 저장 실패. 다시 시도해주세요.')));
+                      const SnackBar(content: Text('❌ Try again.')));
                 }
               }
             },

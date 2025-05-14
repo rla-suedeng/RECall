@@ -58,7 +58,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: AccessibilitySettings.highContrast,
+      valueListenable: AccessibilitySettings.highContrast, // TO DO
       builder: (context, isHighContrast, _) {
         return MaterialApp.router(
           title: 'RECall',

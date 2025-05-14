@@ -72,17 +72,17 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
-              labelText: 'imput format: YYYY-MM-DD ',
+              labelText: 'input format: YYYY-MM-DD ',
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('delete'),
+              child: const Text('Delete'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('check'),
+              child: const Text('Ok'),
             ),
           ],
         );
@@ -121,7 +121,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           .showSnackBar(const SnackBar(content: Text("Rejected")));
       _loadApplications();
     } catch (e) {
-      debugPrint("❌ 거절 오류: $e");
+      debugPrint("❌ Reject Error: $e");
     }
   }
 

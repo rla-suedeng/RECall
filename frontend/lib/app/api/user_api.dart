@@ -67,7 +67,7 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 Apply Fail: ${response.body}');
+      throw Exception('Apply Fail: ${response.body}');
     }
   }
 
@@ -81,7 +81,7 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 Failed to retrieve list of received applications');
+      throw Exception('Failed to retrieve list of received applications');
     }
 
     final List data = jsonDecode(response.body);
@@ -98,7 +98,7 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 Failed to retrieve list of received applications');
+      throw Exception('Failed to retrieve list of received applications');
     }
 
     final List data = jsonDecode(response.body);
@@ -118,7 +118,7 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 Reject Fail: ${response.body}');
+      throw Exception('Reject Fail: ${response.body}');
     }
   }
 
@@ -140,7 +140,7 @@ class UserApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('🟥 Accept Fail: ${response.body}');
+      throw Exception('Accept Fail: ${response.body}');
     }
   }
 

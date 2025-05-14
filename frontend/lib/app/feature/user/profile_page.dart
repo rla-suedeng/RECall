@@ -205,20 +205,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           ]),
                         ],
                       ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text("High Contrast",
-                              style: TextStyle(fontSize: 16)),
-                          Switch(
-                            value: AccessibilitySettings.highContrast.value,
-                            onChanged: (val) {
-                              AccessibilitySettings.highContrast.value = val;
-                            },
-                          ),
-                        ],
-                      ),
                     ]),
                   ),
                   if (!user!.role && linkedPatient != null) ...[
