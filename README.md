@@ -2,11 +2,13 @@
 
 Google APAC Solution Challenge
 
-- Belonging: GDG-KU on Campus
+- Belonging: GDG-KU on Campus Team 1
+
+![Logo](logo.png)
 
 ### Problem Statement
 
-Improving Accessibility and Personalization in Reminiscence Therapy for Dementia Patients Using Large Language Models
+Improving Accessibility and Personalization in Reminiscence Therapy for Neurocognitive Disorders Patients Using Large Language Models
 
 ### Features
 
