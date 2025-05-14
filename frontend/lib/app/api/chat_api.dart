@@ -74,7 +74,8 @@ class ChatApi {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('❌ 메시지 전송 실패: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          '❌ Fail to send Message: ${response.statusCode} - ${response.body}');
     }
   }
 

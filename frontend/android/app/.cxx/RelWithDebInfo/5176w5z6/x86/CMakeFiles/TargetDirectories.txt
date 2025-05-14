@@ -1,0 +1,2 @@
+/Users/sue._.kim/Documents/SolutionChallenge/RECall-FE/frontend/android/app/.cxx/RelWithDebInfo/5176w5z6/x86/CMakeFiles/edit_cache.dir
+/Users/sue._.kim/Documents/SolutionChallenge/RECall-FE/frontend/android/app/.cxx/RelWithDebInfo/5176w5z6/x86/CMakeFiles/rebuild_cache.dir

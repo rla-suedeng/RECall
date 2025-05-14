@@ -11,7 +11,7 @@ class HistoryApi {
 
   Future<List<HistoryModel>> getHistory() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/history'),
+      Uri.parse('$baseUrl/history/'),
       headers: {
         'Authorization': 'Bearer $_token',
         'Content-Type': 'application/json',

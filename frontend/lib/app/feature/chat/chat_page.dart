@@ -91,14 +91,18 @@ class _ChatPageState extends State<ChatPage>
         _messages.clear();
         _messages.addAll(historyList);
       });
-      final alreadyExists = _messages.any(
-          (m) => m.uId == 'gemini' && m.content.trim() == initialText.trim());
+      final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
+      final alreadyExists = initialText != null &&
+          _messages.any((m) =>
+              m.uId == 'gemini' &&
+              m.content.trim() == initialText.trim() &&
+              m.timestamp == createdAt);
       debugPrint("✅ initialText: $initialText");
       debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
       debugPrint("✅ comparision results: $alreadyExists");
       final audioBytes =
           base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
-      final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
+      print("🎙️ Recoded Byte: ${audioBytes?.length}");
       if (initialText != null && !alreadyExists) {
         debugPrint("🔥 inside condition");
         setState(() {
@@ -187,7 +191,7 @@ class _ChatPageState extends State<ChatPage>
 
       if ((responseText?.toLowerCase().contains("peaceful and joyful day") ??
           false)) {
-        Future.delayed(const Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 4), () {
           if (mounted) context.go(Routes.home);
         });
       }

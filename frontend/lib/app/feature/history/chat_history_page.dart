@@ -22,7 +22,9 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   @override
   void initState() {
     super.initState();
-    fetchHistory();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchHistory();
+    });
   }
 
   @override
@@ -34,19 +36,36 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   List<HistoryModel> historyList = [];
 
   Future<void> fetchHistory() async {
-    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      debugPrint("❌ [fetchHistory] Firebase user is null");
+      return;
+    }
+
+    final token = await user.getIdToken(true);
+    debugPrint(
+        "🔐 [fetchHistory] Firebase Token (first 20): ${token != null ? token.substring(0, 20) : 'null'}...");
+
+    if (token == null || token.isEmpty) {
+      debugPrint("❌ [fetchHistory] Firebase token is empty");
+      return;
+    }
+
     final historyApi = HistoryApi(token);
+
     try {
       final result = widget.recId != null
-          ? await historyApi
-              .getHistoryByRecId(widget.recId!) // GET /history/{r_id}
-          : await historyApi.getHistory(); // GET /history
+          ? await historyApi.getHistoryByRecId(widget.recId!)
+          : await historyApi.getHistory();
+
+      debugPrint("✅ [fetchHistory] History fetch 성공, count: ${result.length}");
 
       setState(() {
         historyList = result;
       });
     } catch (e) {
-      print('❌ history fetch error: $e');
+      debugPrint("❌ [fetchHistory] error 발생: $e");
     }
   }
 

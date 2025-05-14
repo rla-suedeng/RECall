@@ -506,18 +506,6 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("High Contrast",
-                          style: TextStyle(fontSize: 16)),
-                      Switch(
-                        value: highContrast,
-                        onChanged: (val) =>
-                            AccessibilitySettings.highContrast.value = val,
-                      ),
-                    ],
-                  ),
                 ],
               ),
             );
