@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:go_router/go_router.dart';
@@ -74,11 +74,8 @@ class _ChatPageState extends State<ChatPage>
     });
   }
 
-  bool isSameMessage(ChatModel m, String initialText, DateTime? ts) {
-    return m.uId == 'gemini' &&
-        m.content.trim() == initialText.trim() &&
-        ts != null &&
-        (m.timestamp.difference(ts).inSeconds).abs() < 5;
+  bool isSameMessage(ChatModel m, String initialText) {
+    return m.uId == 'gemini' && m.content.trim() == initialText.trim();
   }
 
   Future<void> _loadChatHistory() async {
@@ -98,30 +95,23 @@ class _ChatPageState extends State<ChatPage>
         _messages.clear();
         _messages.addAll(historyList);
       });
-      final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
+      final createdAt = DateTime.tryParse(data['timestamp'] ?? '')?.toUtc();
       final alreadyExists = initialText != null &&
-          _messages.any((m) => isSameMessage(m, initialText, createdAt));
-      debugPrint("✅ initialText: $initialText");
-      debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
-      debugPrint("✅ comparision results: $alreadyExists");
+          _messages.any((m) => isSameMessage(m, initialText));
+
       final audioBytes =
           base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
-      print("🎙️ Recoded Byte: ${audioBytes?.length}");
+
       if (initialText != null && !alreadyExists) {
-        debugPrint("🔥 inside condition");
         setState(() {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: initialText,
-            timestamp: createdAt ?? DateTime.now(),
+            timestamp: createdAt ?? DateTime.now().toUtc(),
           ));
         });
-        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
-        debugPrint("🎧 decoded audioBytes length: ${audioBytes?.length}");
       }
       if (audioBytes != null) {
-        debugPrint("🎧 base64Audio length: ${base64Audio?.length ?? 'null'}");
-        debugPrint("🎧 decoded audioBytes length: ${audioBytes.length}");
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _audioService.playAudioBytes(audioBytes);
         });
@@ -164,14 +154,14 @@ class _ChatPageState extends State<ChatPage>
           _messages.add(ChatModel(
             uId: 'user',
             content: userText,
-            timestamp: DateTime.now(),
+            timestamp: DateTime.now().toUtc(),
           ));
         }
         if (responseText != null) {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: responseText,
-            timestamp: DateTime.now(),
+            timestamp: DateTime.now().toUtc(),
           ));
         }
         recordingStatus = '✅ Reply received!';
@@ -186,7 +176,7 @@ class _ChatPageState extends State<ChatPage>
         _messages.add(ChatModel(
           uId: 'user',
           content: userText,
-          timestamp: DateTime.now(),
+          timestamp: DateTime.now().toUtc(),
         ));
         Future.delayed(const Duration(milliseconds: 200), () {
           _scrollToBottom();
@@ -202,7 +192,7 @@ class _ChatPageState extends State<ChatPage>
 
       _scrollToBottom();
     } catch (e) {
-      print("❌ 오류 발생: $e");
+      print("❌ Error : $e");
       setState(() => recordingStatus = '❌ Error occurred');
     }
   }

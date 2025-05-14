@@ -78,11 +78,11 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('delete'),
+              child: const Text('Delete'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('check'),
+              child: const Text('Ok'),
             ),
           ],
         );
@@ -121,7 +121,7 @@ class _ReceivedApplicationsPageState extends State<ReceivedApplicationsPage> {
           .showSnackBar(const SnackBar(content: Text("Rejected")));
       _loadApplications();
     } catch (e) {
-      debugPrint("❌ 거절 오류: $e");
+      debugPrint("❌ Reject Error: $e");
     }
   }
 

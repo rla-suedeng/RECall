@@ -21,7 +21,7 @@ class ChatModel {
     return {
       'u_id': uId,
       'content': content,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': timestamp.toUtc(),
     };
   }
 }
