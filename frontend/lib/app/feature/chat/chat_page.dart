@@ -74,6 +74,13 @@ class _ChatPageState extends State<ChatPage>
     });
   }
 
+  bool isSameMessage(ChatModel m, String initialText, DateTime? ts) {
+    return m.uId == 'gemini' &&
+        m.content.trim() == initialText.trim() &&
+        ts != null &&
+        (m.timestamp.difference(ts).inSeconds).abs() < 5;
+  }
+
   Future<void> _loadChatHistory() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -93,10 +100,7 @@ class _ChatPageState extends State<ChatPage>
       });
       final createdAt = DateTime.tryParse(data['timestamp'] ?? '');
       final alreadyExists = initialText != null &&
-          _messages.any((m) =>
-              m.uId == 'gemini' &&
-              m.content.trim() == initialText.trim() &&
-              m.timestamp == createdAt);
+          _messages.any((m) => isSameMessage(m, initialText, createdAt));
       debugPrint("✅ initialText: $initialText");
       debugPrint("✅ _messages: ${_messages.map((m) => m.content).toList()}");
       debugPrint("✅ comparision results: $alreadyExists");
@@ -261,11 +265,11 @@ class _ChatPageState extends State<ChatPage>
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final isUser = msg.uId == 'user';
+                final isGemini = msg.uId == 'gemini';
                 return Column(
-                  crossAxisAlignment: isUser
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
+                  crossAxisAlignment: isGemini
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.end,
                   children: [
                     Text(
                       TimeOfDay.fromDateTime(msg.timestamp).format(context),
@@ -277,22 +281,23 @@ class _ChatPageState extends State<ChatPage>
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       constraints: const BoxConstraints(maxWidth: 250),
                       decoration: BoxDecoration(
-                        color: isUser ? Colors.deepOrangeAccent : Colors.white,
+                        color:
+                            isGemini ? Colors.white : Colors.deepOrangeAccent,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: isUser
-                            ? []
-                            : [
+                        boxShadow: isGemini
+                            ? [
                                 BoxShadow(
                                   color: Colors.grey.withOpacity(0.2),
                                   blurRadius: 4,
                                   offset: const Offset(2, 2),
                                 )
-                              ],
+                              ]
+                            : [],
                       ),
                       child: Text(
                         msg.content,
                         style: TextStyle(
-                          color: isUser ? Colors.white : Colors.black87,
+                          color: isGemini ? Colors.black87 : Colors.white,
                         ),
                       ),
                     ),

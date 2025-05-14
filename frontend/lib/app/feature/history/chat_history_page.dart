@@ -18,6 +18,8 @@ class ChatHistoryPage extends StatefulWidget {
 
 class _ChatHistoryPageState extends State<ChatHistoryPage> {
   late final ScrollController _scrollController = ScrollController();
+  List<HistoryModel> historyList = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -33,39 +35,39 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     super.dispose();
   }
 
-  List<HistoryModel> historyList = [];
-
   Future<void> fetchHistory() async {
-    final user = FirebaseAuth.instance.currentUser;
+    setState(() => isLoading = true);
 
+    final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       debugPrint("❌ [fetchHistory] Firebase user is null");
+      setState(() => isLoading = false);
       return;
     }
 
     final token = await user.getIdToken(true);
-    debugPrint(
-        "🔐 [fetchHistory] Firebase Token (first 20): ${token != null ? token.substring(0, 20) : 'null'}...");
-
     if (token == null || token.isEmpty) {
       debugPrint("❌ [fetchHistory] Firebase token is empty");
+      setState(() => isLoading = false);
       return;
     }
 
     final historyApi = HistoryApi(token);
-
     try {
       final result = widget.recId != null
           ? await historyApi.getHistoryByRecId(widget.recId!)
           : await historyApi.getHistory();
 
-      debugPrint("✅ [fetchHistory] History fetch 성공, count: ${result.length}");
+      debugPrint(
+          "✅ [fetchHistory] History fetch Success, count: ${result.length}");
 
       setState(() {
         historyList = result;
+        isLoading = false;
       });
     } catch (e) {
-      debugPrint("❌ [fetchHistory] error 발생: $e");
+      debugPrint("❌ [fetchHistory] error occur: $e");
+      setState(() => isLoading = false);
     }
   }
 
@@ -81,7 +83,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
 
       if (target == today) return 'Today';
       if (target == yesterday) return 'Yesterday';
-      return DateFormat.yMMMMd().format(parsedDate); // e.g. May 4, 2025
+      return DateFormat.yMMMMd().format(parsedDate);
     } catch (e) {
       return 'Invalid date';
     }
@@ -90,70 +92,72 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: const RECallAppBar(
-          title: 'Chat History',
-          titleTextStyle: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+      appBar: const RECallAppBar(
+        title: 'Chat History',
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
-        body: Column(
-          children: [
-            // Chat List
-            Expanded(
-              child: historyList.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No History',
-                        style: TextStyle(
-                            color: AppColors.textSecondary, fontSize: 20),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      itemCount: historyList.length,
-                      itemBuilder: (context, index) {
-                        final h = historyList[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 6),
-                          child: Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                                title: Text(formatChatDate(h.date)),
-                                subtitle: Text(
-                                    h.summary?.toString() ?? 'No Summary',
-                                    overflow: TextOverflow.ellipsis),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  context.go('/chat_detail/${h.hId}');
-                                }),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: historyList.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No History',
+                            style: TextStyle(
+                                color: AppColors.textSecondary, fontSize: 20),
                           ),
-                        );
-                      },
-                    ),
+                        )
+                      : ListView.builder(
+                          controller: _scrollController,
+                          itemCount: historyList.length,
+                          itemBuilder: (context, index) {
+                            final h = historyList[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 6),
+                              child: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  title: Text(formatChatDate(h.date)),
+                                  subtitle: Text(
+                                    h.summary?.toString() ?? 'No Summary',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () {
+                                    context.go('/chat_detail/${h.hId}');
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+          );
+        },
+        backgroundColor: AppColors.primary,
+        child: const Icon(
+          Icons.arrow_upward,
+          color: AppColors.background,
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _scrollController.animateTo(
-              0,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOut,
-            );
-          },
-          backgroundColor: AppColors.primary,
-          child: const Icon(
-            Icons.arrow_upward,
-            color: AppColors.background,
-          ),
-        ),
-        bottomNavigationBar: const CustomBottomNavBar(
-          currentIndex: 2,
-        ));
+      ),
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
+    );
   }
 }
