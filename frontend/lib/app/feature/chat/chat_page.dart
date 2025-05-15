@@ -84,7 +84,35 @@ class _ChatPageState extends State<ChatPage>
       if (token == null) throw Exception("No token");
 
       final chatApi = ChatApi(token);
-      final data = await chatApi.enterChat();
+      final (statusCode, data) = await chatApi.enterChat();
+      if (statusCode == 403) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("❌ No permission to enter")),
+          );
+          context.go(Routes.home);
+        }
+        return;
+      }
+      if (statusCode == 404) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Need Memory Record")),
+          );
+          context.go(Routes.home);
+        }
+        return;
+      }
+      if (statusCode != 200 || data == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("⚠️ Error Occur: $statusCode")),
+          );
+          context.go(Routes.home);
+        }
+        return;
+      }
+
       _hId = data['h_id'];
       final initialText = data['initial_text'];
       final base64Audio = data['audio_base64'];
@@ -124,7 +152,7 @@ class _ChatPageState extends State<ChatPage>
     }
   }
 
-  Future<void> _startVoiceChat() async {
+  Future<void> startVoiceChat() async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null || _hId == null) throw Exception("No token or chat id");
@@ -299,7 +327,7 @@ class _ChatPageState extends State<ChatPage>
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _startVoiceChat,
+        onPressed: startVoiceChat,
         child: const Icon(Icons.mic),
       ),
       bottomNavigationBar: const CustomBottomNavBar(
