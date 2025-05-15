@@ -5,8 +5,8 @@ class AppColors {
   static const primary = Color(0xFFE67553);
   static const secondary = Color(0xFF2D4436);
 
-  static const softYellow = Color(0xFFFFEEBC); // 연노랑 (#FFEEBC)
-  static const softBlue = Color(0xFFD2E8FF); // 연하늘 (#D2E8FF)
+  static const softYellow = Color(0xFFFFEEBC);
+  static const softBlue = Color(0xFFD2E8FF);
 
   static const textPrimary = Color(0xFF1F2937);
   static const textSecondary = Color(0xFF2E422A);

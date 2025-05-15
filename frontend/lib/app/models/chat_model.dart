@@ -1,5 +1,5 @@
 class ChatModel {
-  final String uId; // "user" 또는 "gemini"
+  final String uId; // "user" or "gemini"
   final String content;
   final DateTime timestamp;
 

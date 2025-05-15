@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -12,7 +11,6 @@ import 'package:template/app/models/chat_model.dart';
 import 'package:template/app/service/audio_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
 
 String extractOriginalImageUrl(String proxyUrl) {
   final uri = Uri.parse(proxyUrl);
@@ -170,7 +168,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     await _audioService.startRecording();
     setState(() => isRecording = true);
 
-    // 5초 후 자동 종료
     Future.delayed(const Duration(seconds: 5), () {
       if (isRecording) stopRecordingAndSend();
     });

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // ✅ GoRouter를 사용하는 경우 추가
+import 'package:go_router/go_router.dart';
 import 'package:template/app/api/rec_api.dart';
 import 'package:template/app/models/rec_model.dart';
 import 'package:template/app/models/user_model.dart';
-import 'package:template/app/routing/router_service.dart'; // ✅ 라우트 관리용
+import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/service/firebase_storage_service.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/theme/colors.dart';
 import 'package:template/app/api/user_api.dart';
 import 'package:get_it/get_it.dart';
@@ -62,7 +62,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 이미지 업로드 영역
+              // Image Upload
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -271,7 +271,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
 
             try {
               final user = FirebaseAuth.instance.currentUser;
-              final userId = user?.uid ?? 'anonymous'; // ✅ 로그인된 유저 ID 사용
+              final userId = user?.uid ?? 'anonymous';
 
               final url =
                   await firebaseService.pickAndUploadImage(userId: userId);

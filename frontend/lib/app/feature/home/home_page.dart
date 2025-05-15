@@ -312,7 +312,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // 요일 텍스트
   String _weekday(int weekday) {
     const week = [
       'Monday',

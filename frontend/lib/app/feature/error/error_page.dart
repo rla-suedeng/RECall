@@ -8,7 +8,7 @@ class ErrorPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         child: const Text(
-          '❌ 에러페이지 입니다!',
+          '❌ Error Page!',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
