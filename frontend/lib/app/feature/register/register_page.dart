@@ -57,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const Text('Join us to start your journey'),
                       const SizedBox(height: 48),
 
-                      // --- TextFields ---
+                      //TextFields
                       TextField(
                         controller: firstNameController,
                         decoration: const InputDecoration(
@@ -141,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // --- Role Select ---
+                      //Role Select
                       const SizedBox(height: 16),
 
                       Column(
@@ -175,7 +175,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ],
                       ),
 
-                      // --- Create Account Button ---
+                      //Create Account Button
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -224,7 +224,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   pId: null,
                                 );
                                 if (result.isSuccess) {
-                                  debugPrint('✅ DB 등록 성공: ${result.data}');
+                                  debugPrint(
+                                      '✅ DB apply Success: ${result.data}');
 
                                   // Page
                                   if (_selectedRole == 'recorder') {
@@ -289,13 +290,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         height: 48,
                         child: OutlinedButton.icon(
-                          icon: const Icon(Icons.g_mobiledata),
-                          label: const Text('Sign in with Google'),
-                          onPressed: () {
-                            debugPrint('✅ Google Sign-In 눌림');
-                          },
-                        ),
-                      ),
+                            icon: const Icon(Icons.g_mobiledata),
+                            label: const Text(
+                                'Sign in with Google will be update'),
+                            onPressed: null),
+                      ), //disable Google Login
                       const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

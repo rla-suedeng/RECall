@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
     isLoading = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_popupShown) {
+      if (!_popupShown && (user?.role == true)) {
         _showWelcomePopup(context);
         _popupShown = true;
       }
@@ -312,7 +312,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // 요일 텍스트
   String _weekday(int weekday) {
     const week = [
       'Monday',

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -6,12 +5,12 @@ import 'package:lottie/lottie.dart';
 import 'package:go_router/go_router.dart';
 import 'package:template/app/api/chat_api.dart';
 import 'package:template/app/routing/router_service.dart';
+import 'package:template/app/theme/colors.dart';
 import 'package:template/app/widgets/bottom_navigation_bar.dart';
 import 'package:template/app/models/chat_model.dart';
 import 'package:template/app/service/audio_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
 
 String extractOriginalImageUrl(String proxyUrl) {
   final uri = Uri.parse(proxyUrl);
@@ -29,17 +28,19 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage>
-    with SingleTickerProviderStateMixin {
+class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   final List<ChatModel> _messages = [];
   String? _imageUrl;
   AnimationController? _controller;
+  AnimationController? _lottieController;
   Animation<double>? _fadeAnimation;
   late final AudioService _audioService;
   final ScrollController _scrollController = ScrollController();
   late final AudioPlayer _player;
   int? _hId;
   String recordingStatus = '🎤 Ready to record...';
+  bool initialTextLoaded = false;
+  bool isRecording = false;
 
   @override
   void initState() {
@@ -51,6 +52,11 @@ class _ChatPageState extends State<ChatPage>
     _fadeAnimation = CurvedAnimation(
       parent: _controller!,
       curve: Curves.easeIn,
+    );
+
+    _lottieController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
     );
 
     _player = AudioPlayer();
@@ -84,33 +90,65 @@ class _ChatPageState extends State<ChatPage>
       if (token == null) throw Exception("No token");
 
       final chatApi = ChatApi(token);
-      final data = await chatApi.enterChat();
+      final (statusCode, data) = await chatApi.enterChat();
+      if (statusCode == 403) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("❌ No permission to enter")),
+          );
+          context.go(Routes.home);
+        }
+        return;
+      }
+      if (statusCode == 404) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Need Memory Record")),
+          );
+          context.go(Routes.home);
+        }
+        return;
+      }
+      if (statusCode != 200 || data == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("⚠️ Error Occur: $statusCode")),
+          );
+          context.go(Routes.home);
+        }
+        return;
+      }
+
       _hId = data['h_id'];
       final initialText = data['initial_text'];
       final base64Audio = data['audio_base64'];
       _imageUrl = extractOriginalImageUrl(data['rec_file']);
 
       final historyList = await chatApi.getChatHistory(historyId: _hId!);
-      setState(() {
-        _messages.clear();
-        _messages.addAll(historyList);
-      });
       final createdAt = DateTime.tryParse(data['timestamp'] ?? '')?.toUtc();
       final alreadyExists = initialText != null &&
-          _messages.any((m) => isSameMessage(m, initialText));
+          historyList.any((m) => isSameMessage(m, initialText));
 
       final audioBytes =
           base64Audio != null ? chatApi.decodeAudioBase64(base64Audio) : null;
 
-      if (initialText != null && !alreadyExists) {
-        setState(() {
+      setState(() {
+        _messages.clear();
+        _messages.addAll(historyList);
+
+        if (initialText != null && !alreadyExists) {
           _messages.add(ChatModel(
             uId: 'gemini',
             content: initialText,
             timestamp: createdAt ?? DateTime.now().toUtc(),
           ));
-        });
-      }
+        }
+
+        if (initialText != null || _messages.any((m) => m.uId == 'gemini')) {
+          initialTextLoaded = true;
+        }
+      });
+
       if (audioBytes != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _audioService.playAudioBytes(audioBytes);
@@ -124,19 +162,31 @@ class _ChatPageState extends State<ChatPage>
     }
   }
 
-  Future<void> _startVoiceChat() async {
+  Future<void> startRecording() async {
+    setState(() => recordingStatus = '🎙️ Recording...');
+    _lottieController?.repeat();
+    await _audioService.startRecording();
+    setState(() => isRecording = true);
+
+    Future.delayed(const Duration(seconds: 5), () {
+      if (isRecording) stopRecordingAndSend();
+    });
+  }
+
+  Future<void> stopRecordingAndSend() async {
+    final audioBytes = await _audioService.stopRecordingAndGetBytes();
+    setState(() {
+      recordingStatus = '💬 Getting message from Gemini...';
+      isRecording = false;
+    });
+    _lottieController?.stop();
+    await _sendToGemini(audioBytes);
+  }
+
+  Future<void> _sendToGemini(List<int> audioBytes) async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null || _hId == null) throw Exception("No token or chat id");
-
-      await _player.stop();
-
-      setState(() => recordingStatus = '🎙️ Recording...');
-
-      await _audioService.startRecording();
-      await Future.delayed(const Duration(seconds: 5));
-      final audioBytes = await _audioService.stopRecordingAndGetBytes();
-      setState(() => recordingStatus = '💬 Getting message from Gemini...');
 
       final chatApi = ChatApi(token);
       final result = await chatApi.sendMessageWithAudio(
@@ -172,16 +222,7 @@ class _ChatPageState extends State<ChatPage>
         await _audioService.playAudioBytes(responseAudio);
       }
 
-      if (userText?.toLowerCase().contains("goodbye") ?? false) {
-        _messages.add(ChatModel(
-          uId: 'user',
-          content: userText,
-          timestamp: DateTime.now().toUtc(),
-        ));
-        Future.delayed(const Duration(milliseconds: 200), () {
-          _scrollToBottom();
-        });
-      }
+      _scrollToBottom();
 
       if ((responseText?.toLowerCase().contains("peaceful and joyful day") ??
           false)) {
@@ -189,8 +230,6 @@ class _ChatPageState extends State<ChatPage>
           if (mounted) context.go(Routes.home);
         });
       }
-
-      _scrollToBottom();
     } catch (e) {
       print("❌ Error : $e");
       setState(() => recordingStatus = '❌ Error occurred');
@@ -200,6 +239,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void dispose() {
     _controller?.dispose();
+    _lottieController?.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -225,7 +265,6 @@ class _ChatPageState extends State<ChatPage>
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  print('❌ Fail to load image: $error');
                   return Container(
                     height: MediaQuery.of(context).size.height * 0.3,
                     color: Colors.grey[300],
@@ -237,14 +276,24 @@ class _ChatPageState extends State<ChatPage>
             ),
           Column(
             children: [
-              Lottie.asset('assets/listening-wave.json', height: 60),
+              Lottie.asset(
+                'assets/listening-wave.json',
+                height: 60,
+                controller: _lottieController,
+                onLoaded: (composition) {
+                  _lottieController?.duration = composition.duration;
+                },
+              ),
               const SizedBox(height: 4),
               Text(recordingStatus,
                   style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.blueGrey)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              const Text("👋 Say 'Good bye' to finish the conversation.",
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 8),
             ],
           ),
           const Divider(height: 1),
@@ -298,9 +347,36 @@ class _ChatPageState extends State<ChatPage>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _startVoiceChat,
-        child: const Icon(Icons.mic),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!initialTextLoaded)
+            const Text(
+              'Loading Memory...',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          const SizedBox(height: 4),
+          GestureDetector(
+            onLongPressStart:
+                initialTextLoaded ? (_) async => await startRecording() : null,
+            onLongPressEnd: initialTextLoaded
+                ? (_) async => await stopRecordingAndSend()
+                : null,
+            child: Opacity(
+              opacity: initialTextLoaded ? 1.0 : 0.5,
+              child: FloatingActionButton(
+                backgroundColor: initialTextLoaded
+                    ? (isRecording ? Colors.red : AppColors.secondary)
+                    : Colors.grey.shade400,
+                onPressed: null,
+                child: Icon(Icons.mic,
+                    color: initialTextLoaded
+                        ? Colors.grey.shade200
+                        : Colors.white),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const CustomBottomNavBar(
         currentIndex: null,

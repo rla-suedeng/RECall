@@ -16,17 +16,16 @@ class ChatApi {
       };
 
   /// post /chat/enter
-  Future<Map<String, dynamic>> enterChat() async {
+  Future<(int statusCode, Map<String, dynamic>? body)> enterChat() async {
     final response = await http.post(
       Uri.parse('$baseUrl/chat/enter'),
       headers: _headers,
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return (200, jsonDecode(response.body) as Map<String, dynamic>);
     } else {
-      throw Exception(
-          '❌ enter_chat Fail: ${response.statusCode} - ${response.body}');
+      return (response.statusCode, null); // body가 없는 경우 null
     }
   }
 

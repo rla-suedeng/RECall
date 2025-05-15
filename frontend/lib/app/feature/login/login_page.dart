@@ -58,13 +58,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 8),
-              Align(
+              const Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    // TODO: Forgot password flow
-                  },
-                  child: const Text('Forgot password?'),
+                  onPressed: null,
+                  child: Text('Forgot password?(Will be Updated)'),
                 ),
               ),
               const SizedBox(height: 16),
@@ -102,17 +100,10 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 height: 48,
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.g_mobiledata),
-                  label: const Text('Sign in with Google'),
-                  onPressed: () async {
-                    debugPrint('✅ Google Login is pushed');
-                    // TODO: google login
-                    if (mounted) {
-                      context.go(Routes.home);
-                    }
-                  },
-                ),
-              ),
+                    icon: const Icon(Icons.g_mobiledata),
+                    label: const Text('Sign in with Google will be update'),
+                    onPressed: null),
+              ), //disable Google Login
               const SizedBox(height: 24),
               TextButton(
                 onPressed: () {

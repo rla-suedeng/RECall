@@ -60,28 +60,6 @@ class _AlbumPageState extends State<AlbumPage> {
           : null;
       final order = selectedSort == 'Newest First' ? 'desc' : 'asc';
 
-      if (!user.role) {
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Access Denied'),
-              content: const Text('Only reminders can access memory albums.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    context.go(Routes.home);
-                  },
-                  child: const Text('Go to Home'),
-                ),
-              ],
-            ),
-          );
-        }
-        return;
-      }
-
       final recs = await recApi.getRecs(
         category: filteredCategory,
         keyword: keyword,

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:template/app/routing/router_service.dart';
 import 'package:template/app/api/user_api.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth에서 토큰 가져오기
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:template/app/api/dio_client.dart';
-import 'package:dio/dio.dart'; // Import Dio package
+import 'package:dio/dio.dart';
 
 class RecorderRegisterPage extends StatefulWidget {
   const RecorderRegisterPage({super.key});

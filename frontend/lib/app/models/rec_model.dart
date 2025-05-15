@@ -1,14 +1,14 @@
 import 'package:intl/intl.dart';
 
 class RecModel {
-  final String? rId; // 백엔드에서 생성됨
-  final String uId; // 현재 로그인된 사용자 uid
-  final String title; // title
-  final String? content; // 메모리 설명
-  final String? fileUrl; // Firebase Storage의 다운로드 URL
-  final String? date; // yyyy-MM-dd 형식
-  final String category; // childhood, family, travel, special
-  final String? authorName; // 생성 유저 이름 등
+  final String? rId;
+  final String uId;
+  final String title;
+  final String? content;
+  final String? fileUrl;
+  final String? date;
+  final String category;
+  final String? authorName;
 
   RecModel({
     this.rId,
