@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
     isLoading = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_popupShown) {
+      if (!_popupShown && (user?.role == true)) {
         _showWelcomePopup(context);
         _popupShown = true;
       }
