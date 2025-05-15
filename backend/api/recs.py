@@ -1,15 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, Header,APIRouter,status, Query
-from typing import Annotated,List,Optional,Literal
+from typing import List,Optional,Literal
 from sqlalchemy.orm import Session
 from enum import Enum
-from datetime import date, datetime
 
 from database import get_db
-from schemas.recs import (RecBase,RecCreate,RecDetailGet,RecUpdate,RecDelete )
+from schemas.recs import (RecBase,RecCreate,RecDetailGet,RecUpdate )
 from firebase.firebase_user import get_current_user
 from models import Rec, User
-
-#CurrentUser = get_user_id
 
 router = APIRouter(prefix="/rec", tags=["Rec"])
 
@@ -47,17 +44,17 @@ def get_recs(
 ):
     target_uid = user.u_id if user.role else user.p_id
     if not target_uid:
-        raise HTTPException(status_code=400, detail="유효한 사용자 또는 보호자 없음")
+        raise HTTPException(status_code=400, detail="No valid user or reminder")
     
     recs = db.query(Rec).filter(Rec.u_id == target_uid)
     if category:
         recs = recs.filter(Rec.category == category)
     if keyword:
         recs = recs.filter(Rec.content.ilike(f"%{keyword}%"))
-    #정렬기준이 등록일 순서? 아니면 date순서?
+
     if order == "asc":
         recs = recs.order_by(Rec.r_id.asc()).all()
-    else:  # 기본은 desc
+    else:  
         recs = recs.order_by(Rec.r_id.desc()).all()
     return recs
 

@@ -1,12 +1,7 @@
 from pydantic import BaseModel, EmailStr
-from uuid import UUID
-from datetime import date, datetime
+from datetime import date
 from typing import Optional,List,Dict
-from enum import Enum
 from models import CategoryEnum
-
-class Userinfo(BaseModel):
-    u_id : str
 
 class UserBase(BaseModel):
     role: bool 

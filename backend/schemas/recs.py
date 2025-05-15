@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from uuid import UUID
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 from enum import Enum
 
@@ -15,8 +14,6 @@ class CategoryEnum(str, Enum):
 class RecBase(BaseModel):
     r_id:int
     file: str
-    
-    
     
 
 class RecCreate(BaseModel):
@@ -49,11 +46,6 @@ class RecUpdate(BaseModel):
     file: Optional[str]= None
     r_date: Optional[date] = None
     category: Optional[CategoryEnum]= None
-
-
-class RecDelete(BaseModel):
-    r_id: int
-
 
 
 

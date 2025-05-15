@@ -11,7 +11,7 @@ class User(Base):
     __tablename__ = "users"
 
     u_id =Column(String(64), primary_key=True, nullable=False)
-    role = Column(Boolean, default=True, nullable=False)  # True면 patient, False면 care
+    role = Column(Boolean, default=True, nullable=False)  # True->reminder, False-> recorder
     email = Column(String(255), unique=True, nullable=False)
     f_name = Column(String(100), nullable=False)
     l_name = Column(String(100), nullable=False)
