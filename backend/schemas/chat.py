@@ -1,6 +1,4 @@
 from pydantic import BaseModel
-from typing import Annotated, List
-from uuid import UUID
 from datetime import date, datetime
 
 class HistoryBase(BaseModel):
@@ -16,7 +14,4 @@ class ChatBase(BaseModel):
     
 class ChatGet(ChatBase):
     timestamp: datetime
-
-
-# class Message(BaseModel):
 

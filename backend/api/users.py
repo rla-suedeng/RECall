@@ -68,7 +68,7 @@ def accept_care(
     if user.role==False:
         raise HTTPException(status_code=401, detail="Unathorization")
     
-    guardian = db.query(User).filter_by(u_id=user_id, role=False).first()  # role=False → 보호자
+    guardian = db.query(User).filter_by(u_id=user_id, role=False).first()  
     if not guardian or guardian.birthday != req:
         raise HTTPException(status_code=403, detail="Guardian verification failed")
 
@@ -112,7 +112,7 @@ def apply_patient(
     if user.role==True:
         raise HTTPException(status_code=401, detail="Unathorization")
     db = next(get_db())
-    patient = db.query(User).filter_by(email=req.email, role=True).first()  # role=True → 환자
+    patient = db.query(User).filter_by(email=req.email, role=True).first()  # role=True → reminder
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 

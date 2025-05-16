@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 
 
 from database import get_db
-from schemas.chat import (ChatBase,ChatGet)
+from schemas.chat import (ChatGet)
 from firebase.firebase_user import get_current_user,get_current_auth_user
-from models import Rec, User,History,Chat
+from models import  User,History,Chat
 from api.AI_server import stt,tts,enter_chat,send_messages
 from firebase.firebase_user import AuthenticatedUser
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -32,6 +32,9 @@ async def chatroom(
     db: Session = Depends(get_db),
     auth_user: AuthenticatedUser = Depends(get_current_auth_user)
 ):
+    user = auth_user.user
+    if not user.role:
+        raise HTTPException(status_code=403, detail="You are not allowed to chat.")
     result = await enter_chat(db,auth_user)
     return result
 
@@ -40,14 +43,12 @@ async def message(
     h_id :int,
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    user: AuthenticatedUser = Depends(get_current_auth_user)    
+    auth_user: AuthenticatedUser = Depends(get_current_auth_user)    
 ):
+    user = auth_user.user
+    if not user.role:
+        raise HTTPException(status_code=403, detail="You are not allowed to chat.")
     content = await file.read()
     text_output = await stt(content)
-    result = await send_messages(h_id, text_output, db, user)
+    result = await send_messages(h_id, text_output, db, auth_user)
     return result
-
-
-
-
-

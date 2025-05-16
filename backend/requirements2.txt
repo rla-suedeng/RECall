@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-python-dotenv
-python-multipart
-google-generativeai
-google-cloud-texttospeech
-google-cloud-speech
-Pillow
-cloud-sql-python-connector[pymysql]

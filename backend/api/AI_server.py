@@ -1,37 +1,29 @@
-from fastapi import FastAPI, Request, UploadFile, File, Form,Depends,HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi import HTTPException
 from typing import List, Any, Union
 from sqlalchemy.orm import Session
 import google.generativeai as genai
-from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
-import io
-import json
 from PIL import Image
 # pip install google-cloud-texttospeech
 # pip install google-cloud-speech
 from google.cloud import texttospeech
 from google.cloud import speech_v1p1beta1 as speech
 from io import BytesIO
-from models import Chat, History,Rec,User 
-from firebase_admin import storage
+from models import Chat, History,Rec
 import random
 import requests
-from sqlalchemy import not_
 import base64
 from firebase.firebase_user import AuthenticatedUser
+from schemas.chat import ChatGet
 # Load environment variables and configure API key
 load_dotenv()
 my_api_key=os.getenv("GOOGLE_API_KEY").strip()
 genai.configure(api_key=my_api_key)
-import os
-from dotenv import load_dotenv
 
-# .env 경로를 명시적으로 설정
 env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path=env_path)
+
 
 SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
@@ -41,13 +33,14 @@ SYSTEM_PROMPT = os.getenv(
     3. Kindly respond to the elderly person's answer. 
     4. Ask a gentle, open-ended question to encourage the user to share memories about this moment. 
     5. Don't answer to me. Only do what I asked. 
+    6. Be brief with your answers.
     """
 )
 
 # Initialize the Gemini model (multimodal)
 model = genai.GenerativeModel(model_name="gemini-2.0-flash")
 
-def chat_history_from_db(db: Session, h_id: int, limit: int = 20) -> List[dict]:
+def chat_history_from_db(gemini :bool, db: Session, h_id: int, limit: int = 20) -> List[dict]:
     messages = (
         db.query(Chat)
         .filter(Chat.h_id == h_id)
@@ -55,29 +48,40 @@ def chat_history_from_db(db: Session, h_id: int, limit: int = 20) -> List[dict]:
         .limit(limit)
         .all()
     )
-
     clean_history = []
-    for msg in messages:
-        if msg.content:
-            clean_history.append({
-                "role": "model" if msg.u_id=="gemini" else "user",
-                "parts":[{"text": msg.content}]
-            })
+    if gemini:
+        for msg in messages:
+            if msg.content:
+                clean_history.append({
+                    "role": "model" if msg.u_id=="gemini" else "user",
+                    "parts":[{"text": msg.content}]
+                })
+    else:
+        for msg in messages:
+            if msg.content:
+                chat_data = ChatGet(
+                    u_id=msg.u_id,
+                    content=msg.content,
+                    timestamp=msg.timestamp
+                )
+                clean_history.append(chat_data.dict())
     return clean_history
 
 def get_or_create_active_chatroom(db: Session, user_id : int):
-    room = db.query(History).filter(History.summary.is_(None)).first()
+    room = db.query(History).filter(
+        History.summary.is_(None),
+        History.u_id == user_id
+        ).first()
     if room:
-        print(repr(room.summary))  # 공백, \n, \t 확인
+        print(repr(room.summary)) 
         return room,False
     
     recs = db.query(Rec).filter(Rec.u_id == user_id).all()  
-    # if not recs:
-    #     raise HTTPException(status_code=404, detail="No Rec found for user")
+    if not recs:
+        raise HTTPException(status_code=404, detail="No Rec found for user")
 
     selected_rec = random.choice(recs)
 
-    # 새 History 생성
     new_room = History(u_id=user_id, r_id=selected_rec.r_id)
     db.add(new_room)
     db.commit()
@@ -90,7 +94,7 @@ def save_message_to_db(db: Session, h_id: int, u_id: str, content: str):
     db.commit()
     
 async def summarize(db: Session,h_id:int):
-    history_list = chat_history_from_db(db, h_id=h_id)
+    history_list = chat_history_from_db(gemini=True,db = db, h_id=h_id)
     raw_text=""
     for history in history_list:
         raw_text+=f"{history['role']}:{history['parts'][0]['text']}"
@@ -116,27 +120,23 @@ async def enter_chat(db:Session, auth_user: AuthenticatedUser):
     if not rec:
         raise HTTPException(status_code=404, detail="No rec assigned to chatroom.")
 
-    history = chat_history_from_db(db, h_id=room.h_id)
+    history = chat_history_from_db(gemini=True,db = db, h_id=room.h_id)
 
     gemini_text = None
     audio_base64 = None
 
     if is_new:
-        # ✅ 초기 프롬프트 생성
+        # ✅ Initial Prompt
         prompt = """
             1. You are talking to an elderly person. You are therapist, trying to engage the elderly into talking. 
             2. The photo is related to the elderly person's memory. 
             3. The following is a information about the photo written by the elderly person's caregiver.
         """ +rec.content + """
-            4. Briefly describe the photo focusing on people, places, and activities in 1~3 sentences. 
+            4. Briefly describe the photo focusing on people, places, and activities in 1 sentences. 
             5. Ask a gentle, open-ended question to encourage the user to share memories about this moment. 
             6. Keep in mind the information about the photo written by the elderly person's caregiver. You may ask a question related to it. 
             6. Don't answer to me. Only do what I asked.
         """
-
-        # 히스토리 준비
-        # if SYSTEM_PROMPT:
-        #     history.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
 
         headers = {"Authorization": f"Bearer {token}"}
         response = requests.get(room.rec.file, headers=headers)
@@ -157,7 +157,7 @@ async def enter_chat(db:Session, auth_user: AuthenticatedUser):
         "h_id": room.h_id,
         "is_new": is_new,
         "rec_file": rec.file,
-        "history": chat_history_from_db(db,h_id=room.h_id),
+        "history": chat_history_from_db(gemini=False,db=db,h_id=room.h_id),
         "initial_text": gemini_text,
         "audio_base64": audio_base64
     }
@@ -170,8 +170,6 @@ async def send_messages(
 ):
     user = auth_user.user
     token = auth_user.token
-    
-    # 예: Firebase Storage 접근
     
     if text.strip() == "[Voice recognition failed. Please try again.]":
         reply = "Sorry, I couldn't understand your voice. Please try again."
@@ -193,7 +191,7 @@ async def send_messages(
                 "text": end_text,
                 "audio_base64": base64.b64encode(audio).decode()
             }
-    history_list =  chat_history_from_db(db, h_id=h_id)
+    history_list =  chat_history_from_db(gemini=True,db=db, h_id=h_id)
     
     if SYSTEM_PROMPT:
         history_list.insert(0, {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]})
@@ -224,31 +222,22 @@ async def tts(content: str):
     language_code = "en-US"
     name = "en-US-Chirp3-HD-Aoede"
 
-    # 클라이언트 생성
     client = texttospeech.TextToSpeechClient()
-
-    # 요청 구성
     synthesis_input = texttospeech.SynthesisInput(text=content)
-
-    # 음성 구성
     voice = texttospeech.VoiceSelectionParams(
         language_code=language_code,
         name=name
     )
 
-    # 오디오 설정
     audio_config = texttospeech.AudioConfig(
         audio_encoding=texttospeech.AudioEncoding.MP3
     )
-
-    # 요청 보내기
     response = client.synthesize_speech(
         input=synthesis_input,
         voice=voice,
         audio_config=audio_config
     )
 
-    # 오디오 저장
     return response.audio_content 
 
 
@@ -259,8 +248,8 @@ async def stt(content: bytes)-> str:
 
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.MP3,
-        sample_rate_hertz=16000,  # 샘플 속도
-        language_code="en-US",  # 언어코드
+        sample_rate_hertz=16000,  
+        language_code="en-US", 
         enable_automatic_punctuation=True
     )
 
@@ -270,7 +259,7 @@ async def stt(content: bytes)-> str:
         return transcript
 
     except Exception as e:
-        print("❌ STT 오류:", e)
+        print("❌ STT error:", e)
         return "[Voice recognition failed. Please try again.]"
 
 

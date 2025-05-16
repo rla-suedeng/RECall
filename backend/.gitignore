@@ -1,6 +1,8 @@
 __pycache__/
 test/
 firebase/__pycache__/
+schemas/__pycache__/
+api/__pycache__/
 firebase/firebase-adminsdk.json
 .env
 firebase/google.json
